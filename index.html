@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Tabify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #0d1117; color: #e6edf3; font-family: 'Inter', sans-serif; }
+  #app { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
+  input, button, select, textarea { font-family: inherit; }
+  input:focus { outline: none; }
+  button { cursor: pointer; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: #21262d; border-radius: 4px; }
+
+  .screen { min-height: 100vh; }
+
+  /* Splash */
+  #splash { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d1117; }
+  .splash-logo { width: 72px; height: 72px; border-radius: 22px; background: linear-gradient(135deg,#00e5a0,#0070f3); display: flex; align-items: center; justify-content: center; font-size: 36px; margin-bottom: 20px; }
+  .splash-title { font-family: 'Space Grotesk', sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -0.03em; }
+  .splash-sub { color: #7d8590; font-size: 15px; margin-top: 6px; }
+  .splash-bar { margin-top: 48px; width: 40px; height: 4px; border-radius: 2px; background: #00e5a0; animation: pulse 1s infinite alternate; }
+  @keyframes pulse { from { opacity: 0.2; } to { opacity: 1; } }
+
+  /* Auth */
+  #auth { background: #0d1117; padding: 60px 28px 40px; }
+  .auth-title { font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 8px; }
+  .auth-sub { color: #7d8590; font-size: 15px; margin-bottom: 36px; }
+
+  .photo-upload { display: flex; flex-direction: column; align-items: center; margin-bottom: 28px; }
+  .photo-circle { width: 80px; height: 80px; border-radius: 50%; background: #161b22; border: 2px dashed #21262d; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
+  .photo-circle img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-hint { font-size: 11px; color: #7d8590; margin-top: 4px; }
+  .photo-label { font-size: 12px; color: #00e5a0; margin-top: 8px; }
+
+  .field { margin-bottom: 20px; }
+  .field label { display: block; font-size: 13px; color: #7d8590; margin-bottom: 8px; }
+  .field input { width: 100%; padding: 14px 16px; background: #161b22; border: 1.5px solid #21262d; border-radius: 12px; color: #e6edf3; font-size: 15px; transition: border-color .2s; }
+  .field input:focus { border-color: #00e5a0; }
+  .field input::placeholder { color: #3d4449; }
+
+  .pin-row { display: flex; gap: 12px; justify-content: center; margin-bottom: 24px; }
+  .pin-label { font-size: 13px; color: #7d8590; margin-bottom: 12px; }
+  .pin-box { width: 56px; height: 64px; text-align: center; font-size: 24px; font-weight: 700; background: #161b22; border: 1.5px solid #21262d; border-radius: 12px; color: #e6edf3; transition: border-color .2s; }
+  .pin-box:focus { border-color: #00e5a0; }
+  .pin-box.filled { border-color: #00e5a033; }
+
+  .btn-primary { width: 100%; padding: 15px; background: #00e5a0; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; color: #0d1117; transition: opacity .2s; }
+  .btn-primary:disabled { opacity: 0.6; }
+  .btn-primary:active { opacity: 0.85; }
+  .auth-switch { text-align: center; margin-top: 20px; font-size: 14px; color: #7d8590; }
+  .auth-switch span { color: #00e5a0; cursor: pointer; font-weight: 600; }
+
+  /* Nav */
+  #navbar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #0d1117; border-top: 1px solid #21262d; display: flex; padding: 10px 0 20px; z-index: 100; }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; padding: 0; }
+  .nav-icon { font-size: 22px; color: #7d8590; transition: color .15s; }
+  .nav-label { font-size: 11px; color: #7d8590; font-weight: 400; transition: color .15s; }
+  .nav-item.active .nav-icon, .nav-item.active .nav-label { color: #00e5a0; }
+  .nav-item.active .nav-label { font-weight: 600; }
+
+  /* Home */
+  #home { padding-bottom: 100px; }
+  .home-header { padding: 56px 24px 24px; background: linear-gradient(180deg, #0f1f30 0%, #0d1117 100%); }
+  .home-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+  .home-greeting { font-size: 13px; color: #7d8590; }
+  .home-heading { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .home-actions { display: flex; gap: 10px; align-items: center; }
+  .icon-btn { background: none; border: none; color: #7d8590; font-size: 20px; }
+  .logout-btn { background: #161b22; border: 1px solid #21262d; color: #7d8590; border-radius: 8px; padding: 6px 12px; font-size: 13px; }
+
+  .balance-card { background: #161b22; border-radius: 20px; padding: 24px; border: 1px solid #21262d; margin-bottom: 20px; }
+  .balance-label { font-size: 13px; color: #7d8590; margin-bottom: 6px; }
+  .balance-amount { font-family: 'Space Grotesk', sans-serif; font-size: 44px; font-weight: 700; letter-spacing: -0.03em; }
+  .balance-row { display: flex; gap: 20px; margin-top: 16px; align-items: center; }
+  .balance-divider { width: 1px; height: 36px; background: #21262d; }
+  .balance-item-label { font-size: 12px; color: #7d8590; }
+  .balance-item-val { font-size: 18px; font-weight: 700; margin-top: 2px; }
+  .green { color: #00e5a0; }
+  .red { color: #ff8080; }
+
+  .record-btn { width: 100%; padding: 14px; background: #00e5a0; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; color: #0d1117; }
+
+  .section-header { font-size: 12px; color: #7d8590; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .debt-list { padding: 0 24px; }
+  .debt-item { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid #161b22; }
+  .debt-info { flex: 1; }
+  .debt-name { font-weight: 600; font-size: 15px; }
+  .debt-note { font-size: 12px; color: #7d8590; margin-top: 2px; }
+  .debt-amount { text-align: right; }
+  .debt-val { font-weight: 700; font-size: 16px; }
+  .debt-date { font-size: 11px; color: #7d8590; margin-top: 2px; }
+
+  .empty-state { text-align: center; padding: 48px 24px; color: #7d8590; }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-title { font-weight: 600; color: #e6edf3; margin-bottom: 6px; }
+  .empty-text { font-size: 14px; }
+
+  /* Pay */
+  #pay { padding: 56px 24px 100px; }
+  .screen-title { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+  .screen-sub { color: #7d8590; font-size: 14px; margin-bottom: 32px; }
+  .token-row { display: flex; gap: 10px; }
+  .token-input { flex: 1; padding: 14px 16px; background: #161b22; border: 1.5px solid #21262d; border-radius: 12px; color: #e6edf3; font-size: 16px; letter-spacing: 0.12em; font-family: monospace; transition: border-color .2s; }
+  .token-input:focus { border-color: #00e5a0; }
+  .token-input::placeholder { color: #3d4449; letter-spacing: 0.04em; font-family: 'Inter', sans-serif; }
+  .find-btn { padding: 14px 20px; background: #00e5a0; border: none; border-radius: 12px; font-weight: 700; color: #0d1117; font-size: 15px; }
+  .qr-placeholder { text-align: center; padding: 32px 0; color: #7d8590; font-size: 14px; }
+  .qr-icon { font-size: 32px; margin-bottom: 10px; }
+
+  .found-card { background: #161b22; border-radius: 16px; padding: 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 14px; border: 1px solid #00e5a044; }
+  .found-name { font-weight: 700; font-size: 18px; }
+  .found-phone { font-size: 13px; color: #7d8590; }
+  .found-dot { margin-left: auto; width: 10px; height: 10px; border-radius: 50%; background: #00e5a0; }
+  .back-link { text-align: center; margin-top: 12px; color: #7d8590; font-size: 14px; cursor: pointer; }
+
+  /* QR Screen */
+  #myqr { padding: 56px 24px 100px; display: flex; flex-direction: column; align-items: center; }
+  .qr-card { background: #161b22; border-radius: 24px; padding: 28px; border: 1px solid #21262d; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  .qr-name { font-weight: 700; font-size: 20px; text-align: center; }
+  .qr-phone { color: #7d8590; font-size: 14px; }
+  .token-display { background: #0d1117; border-radius: 10px; padding: 10px 20px; text-align: center; }
+  .token-display-label { font-size: 12px; color: #7d8590; margin-bottom: 4px; }
+  .token-display-val { font-family: monospace; font-size: 24px; font-weight: 700; letter-spacing: 0.15em; color: #00e5a0; }
+  .qr-hint { margin-top: 24px; font-size: 13px; color: #7d8590; text-align: center; max-width: 280px; line-height: 1.6; }
+
+  /* History */
+  #history { padding: 56px 24px 100px; }
+  .tx-item { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid #161b22; }
+  .tx-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .tx-sent { background: #1a0f0f; }
+  .tx-recv { background: #0f2010; }
+  .tx-who { font-weight: 600; font-size: 15px; }
+  .tx-meta { font-size: 12px; color: #7d8590; margin-top: 2px; }
+  .tx-amount { font-weight: 700; }
+
+  /* Add Debt */
+  #adddebt { padding: 56px 24px 40px; }
+  .back-btn { background: none; border: none; color: #7d8590; font-size: 15px; margin-bottom: 20px; padding: 0; }
+  .type-row { display: flex; gap: 8px; margin-bottom: 24px; }
+  .type-btn { flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid #21262d; background: #161b22; color: #7d8590; font-weight: 600; font-size: 14px; transition: all .15s; }
+  .type-btn.active { border-color: #00e5a0; background: #0f2e1e; color: #00e5a0; }
+
+  /* Avatar */
+  .avatar { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; letter-spacing: 0.02em; flex-shrink: 0; overflow: hidden; }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* Toast */
+  #toast { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; z-index: 999; white-space: nowrap; display: none; }
+  #toast.success { background: #0f2e1e; border: 1px solid #00e5a0; color: #00e5a0; }
+  #toast.error { background: #3d1a1a; border: 1px solid #6e2020; color: #ff8080; }
+
+  canvas { display: block; border-radius: 12px; }
+  .mt-section { margin-top: 20px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="toast"></div>
+
+  <!-- SPLASH -->
+  <div id="splash" class="screen">
+    <div class="splash-logo">₿</div>
+    <div class="splash-title">Tabify</div>
+    <div class="splash-sub">Track debts. Stay clean.</div>
+    <div class="splash-bar"></div>
+  </div>
+
+  <!-- AUTH -->
+  <div id="auth" class="screen" style="display:none">
+    <div class="auth-title" id="auth-title">Welcome back</div>
+    <div class="auth-sub" id="auth-sub">Sign in with your phone and PIN</div>
+
+    <div class="photo-upload" id="photo-upload-wrap" style="display:none">
+      <div class="photo-circle" onclick="document.getElementById('photo-file').click()">
+        <img id="photo-preview" src="" style="display:none">
+        <div id="photo-placeholder">
+          <div style="font-size:24px">📷</div>
+          <div class="photo-hint">Photo</div>
+        </div>
+      </div>
+      <input type="file" id="photo-file" accept="image/*" style="display:none">
+      <div class="photo-label">Optional profile photo</div>
+    </div>
+
+    <div class="field" id="username-field" style="display:none">
+      <label>Username</label>
+      <input type="text" id="username-input" placeholder="e.g. alex_king">
+    </div>
+
+    <div class="field">
+      <label>Phone number</label>
+      <input type="tel" id="phone-input" placeholder="+1 555 000 0000">
+    </div>
+
+    <div>
+      <div class="pin-label" id="pin-label">Enter your PIN</div>
+      <div class="pin-row">
+        <input class="pin-box" maxlength="1" inputmode="numeric" type="password" id="pin0">
+        <input class="pin-box" maxlength="1" inputmode="numeric" type="password" id="pin1">
+        <input class="pin-box" maxlength="1" inputmode="numeric" type="password" id="pin2">
+        <input class="pin-box" maxlength="1" inputmode="numeric" type="password" id="pin3">
+      </div>
+    </div>
+
+    <button class="btn-primary" id="auth-btn" onclick="doAuth()">Sign in</button>
+    <div class="auth-switch" id="auth-switch">
+      New here? <span onclick="toggleAuthMode()">Create account</span>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div id="home" class="screen" style="display:none">
+    <div class="home-header">
+      <div class="home-top">
+        <div>
+          <div class="home-greeting" id="home-greeting">Hey, there 👋</div>
+          <div class="home-heading">Your balance</div>
+        </div>
+        <div class="home-actions">
+          <button class="icon-btn" onclick="loadData()" title="Refresh">↻</button>
+          <button class="logout-btn" onclick="logout()">Out</button>
+        </div>
+      </div>
+      <div class="balance-card">
+        <div class="balance-label">Net position</div>
+        <div class="balance-amount" id="net-balance">$0.00</div>
+        <div class="balance-row">
+          <div>
+            <div class="balance-item-label">Owed to you</div>
+            <div class="balance-item-val green" id="total-owed">$0.00</div>
+          </div>
+          <div class="balance-divider"></div>
+          <div>
+            <div class="balance-item-label">You owe</div>
+            <div class="balance-item-val red" id="total-iowe">$0.00</div>
+          </div>
+        </div>
+      </div>
+      <button class="record-btn" onclick="showScreen('adddebt')">+ Record debt</button>
+    </div>
+    <div class="debt-list" id="debt-list"></div>
+  </div>
+
+  <!-- PAY -->
+  <div id="pay" class="screen" style="display:none; padding: 56px 24px 100px;">
+    <div class="screen-title">Send payment</div>
+    <div class="screen-sub">Enter a payment token to find someone</div>
+
+    <div id="pay-step1">
+      <div class="field">
+        <label>Payment token</label>
+        <div class="token-row">
+          <input class="token-input" id="token-input" placeholder="e.g. A1B2C3D4" maxlength="8"
+            oninput="this.value=this.value.toUpperCase()"
+            onkeydown="if(event.key==='Enter')lookupToken()">
+          <button class="find-btn" onclick="lookupToken()" id="find-btn">Find</button>
+        </div>
+      </div>
+      <div class="qr-placeholder">
+        <div class="qr-icon">📷</div>
+        QR scanning — use the token above for now
+      </div>
+    </div>
+
+    <div id="pay-step2" style="display:none">
+      <div class="found-card" id="found-card"></div>
+      <div class="field">
+        <label>Amount ($)</label>
+        <input type="number" id="pay-amount" placeholder="0.00" style="width:100%;padding:14px 16px;background:#161b22;border:1.5px solid #21262d;border-radius:12px;color:#e6edf3;font-size:15px;" onfocus="this.style.borderColor='#00e5a0'" onblur="this.style.borderColor='#21262d'">
+      </div>
+      <div class="field">
+        <label>Note (optional)</label>
+        <input type="text" id="pay-note" placeholder="What's this for?" style="width:100%;padding:14px 16px;background:#161b22;border:1.5px solid #21262d;border-radius:12px;color:#e6edf3;font-size:15px;" onfocus="this.style.borderColor='#00e5a0'" onblur="this.style.borderColor='#21262d'">
+      </div>
+      <button class="btn-primary" id="pay-btn" onclick="doPay()">Pay</button>
+      <div class="back-link" onclick="resetPay()">← Try different token</div>
+    </div>
+  </div>
+
+  <!-- MY QR -->
+  <div id="myqr" class="screen" style="display:none">
+    <div style="padding:56px 24px 100px;display:flex;flex-direction:column;align-items:center">
+      <div class="screen-title" style="text-align:center">Your payment code</div>
+      <div class="screen-sub" style="text-align:center">Share this so others can pay you</div>
+      <div class="qr-card">
+        <div id="myqr-avatar"></div>
+        <div style="text-align:center">
+          <div class="qr-name" id="myqr-name"></div>
+          <div class="qr-phone" id="myqr-phone"></div>
+        </div>
+        <canvas id="qr-canvas"></canvas>
+        <div class="token-display">
+          <div class="token-display-label">Token</div>
+          <div class="token-display-val" id="myqr-token"></div>
+        </div>
+      </div>
+      <div class="qr-hint">Others enter your token to send you a payment.</div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="history" class="screen" style="display:none; padding:56px 24px 100px;">
+    <div class="screen-title" style="margin-bottom:24px">History</div>
+    <div id="tx-list"></div>
+  </div>
+
+  <!-- ADD DEBT -->
+  <div id="adddebt" class="screen" style="display:none">
+    <button class="back-btn" onclick="showScreen('home')">← Back</button>
+    <div class="screen-title">Record a debt</div>
+    <div style="height:28px"></div>
+    <div class="type-row">
+      <button class="type-btn active" id="type-owe-me" onclick="setDebtType('owe_me')">They owe me</button>
+      <button class="type-btn" id="type-i-owe" onclick="setDebtType('i_owe')">I owe them</button>
+    </div>
+    <div class="field">
+      <label>Their name</label>
+      <input type="text" id="debt-name" placeholder="Friend's name">
+    </div>
+    <div class="field">
+      <label>Their phone <span style="color:#4d5560">(optional — links to their account)</span></label>
+      <input type="tel" id="debt-phone" placeholder="+1 555 000 0000">
+    </div>
+    <div class="field">
+      <label>Amount ($)</label>
+      <input type="number" id="debt-amount" placeholder="0.00">
+    </div>
+    <div class="field">
+      <label>Note (optional)</label>
+      <input type="text" id="debt-note" placeholder="What's this for?">
+    </div>
+    <button class="btn-primary" id="save-debt-btn" onclick="saveDebt()">Save debt</button>
+  </div>
+
+  <!-- NAV -->
+  <div id="navbar" style="display:none">
+    <button class="nav-item active" id="nav-home" onclick="showScreen('home')">
+      <div class="nav-icon">⌂</div>
+      <div class="nav-label">Home</div>
+    </button>
+    <button class="nav-item" id="nav-pay" onclick="showScreen('pay')">
+      <div class="nav-icon">↑</div>
+      <div class="nav-label">Pay</div>
+    </button>
+    <button class="nav-item" id="nav-myqr" onclick="showScreen('myqr')">
+      <div class="nav-icon">▣</div>
+      <div class="nav-label">My QR</div>
+    </button>
+    <button class="nav-item" id="nav-history" onclick="showScreen('history')">
+      <div class="nav-icon">↯</div>
+      <div class="nav-label">History</div>
+    </button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://zlxkoavtvsktmpgoydji.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpseGtvYXZ0dnNrdG1wZ295ZGppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NzAzMDgsImV4cCI6MjA5ODE0NjMwOH0.5QDeGpq2SZGPw3UNAq7jwdMicQKDKWhkbrbOrmRpl14";
+
+let currentUser = null;
+let currentProfile = null;
+let allDebts = [];
+let allTx = [];
+let isSignup = false;
+let debtType = 'owe_me';
+let foundProfile = null;
+let photoBase64 = null;
+
+// ── API ──────────────────────────────────────────────────────────────────────
+async function sb(path, opts = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: opts.prefer || "return=representation",
+      ...(opts.headers || {})
+    },
+    ...opts
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || err.details || "Request failed");
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+async function sbSignUp(email, password) {
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+    method: "POST",
+    headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
+  return r.json();
+}
+
+async function sbSignIn(email, password) {
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
+  return r.json();
+}
+
+function genToken() {
+  return Math.random().toString(36).substring(2, 10).toUpperCase();
+}
+
+// ── Toast ────────────────────────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = type;
+  el.style.display = 'block';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => el.style.display = 'none', 3200);
+}
+
+// ── Screens ──────────────────────────────────────────────────────────────────
+const appScreens = ['splash','auth','home','pay','myqr','history','adddebt'];
+const navScreens = ['home','pay','myqr','history'];
+
+function showScreen(id) {
+  appScreens.forEach(s => {
+    const el = document.getElementById(s);
+    if (el) el.style.display = 'none';
+  });
+  const el = document.getElementById(id);
+  if (el) el.style.display = (id === 'myqr') ? 'flex' : 'block';
+
+  const nav = document.getElementById('navbar');
+  nav.style.display = navScreens.includes(id) ? 'flex' : 'none';
+
+  document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+  const navBtn = document.getElementById('nav-' + id);
+  if (navBtn) navBtn.classList.add('active');
+
+  if (id === 'myqr') renderMyQR();
+  if (id === 'history') renderHistory();
+  if (id === 'home') renderHome();
+  if (id === 'adddebt') {
+    document.getElementById('debt-name').value = '';
+    document.getElementById('debt-phone').value = '';
+    document.getElementById('debt-amount').value = '';
+    document.getElementById('debt-note').value = '';
+    setDebtType('owe_me');
+  }
+  window.scrollTo(0, 0);
+}
+
+// ── Auth Mode ────────────────────────────────────────────────────────────────
+function toggleAuthMode() {
+  isSignup = !isSignup;
+  document.getElementById('auth-title').textContent = isSignup ? 'Create account' : 'Welcome back';
+  document.getElementById('auth-sub').textContent = isSignup ? 'Set up your Tabify profile' : 'Sign in with your phone and PIN';
+  document.getElementById('auth-btn').textContent = isSignup ? 'Create account' : 'Sign in';
+  document.getElementById('auth-switch').innerHTML = isSignup
+    ? 'Already have an account? <span onclick="toggleAuthMode()">Sign in</span>'
+    : 'New here? <span onclick="toggleAuthMode()">Create account</span>';
+  document.getElementById('pin-label').textContent = isSignup ? 'Create a 4-digit PIN' : 'Enter your PIN';
+  document.getElementById('username-field').style.display = isSignup ? 'block' : 'none';
+  document.getElementById('photo-upload-wrap').style.display = isSignup ? 'flex' : 'none';
+  clearPin();
+}
+
+function clearPin() {
+  [0,1,2,3].forEach(i => {
+    const p = document.getElementById('pin'+i);
+    p.value = '';
+    p.classList.remove('filled');
+  });
+}
+
+function getPin() {
+  return [0,1,2,3].map(i => document.getElementById('pin'+i).value).join('');
+}
+
+// PIN navigation
+[0,1,2,3].forEach(i => {
+  const el = document.getElementById('pin'+i);
+  el.addEventListener('input', () => {
+    if (!/^\d?$/.test(el.value)) { el.value = ''; return; }
+    el.classList.toggle('filled', !!el.value);
+    if (el.value && i < 3) document.getElementById('pin'+(i+1)).focus();
+  });
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !el.value && i > 0) {
+      document.getElementById('pin'+(i-1)).focus();
+    }
+  });
+});
+
+document.getElementById('photo-file').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    photoBase64 = ev.target.result;
+    const preview = document.getElementById('photo-preview');
+    preview.src = photoBase64;
+    preview.style.display = 'block';
+    document.getElementById('photo-placeholder').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+});
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+async function doAuth() {
+  const btn = document.getElementById('auth-btn');
+  const pin = getPin();
+  const phone = document.getElementById('phone-input').value.trim();
+
+  if (!phone) return toast('Phone number required', 'error');
+  if (pin.length !== 4) return toast('Enter a 4-digit PIN', 'error');
+
+  btn.disabled = true;
+  btn.textContent = 'Loading…';
+
+  try {
+    if (isSignup) {
+      const username = document.getElementById('username-input').value.trim();
+      if (!username) { toast('Username required', 'error'); return; }
+      const email = username.toLowerCase().replace(/\s+/g,'_') + '@tabify.app';
+      const password = `tabify_${pin}_${phone.replace(/\D/g,'').slice(-4)}`;
+      const authRes = await sbSignUp(email, password);
+      if (authRes.error) throw new Error(authRes.error.message);
+      const token = genToken();
+      const rows = await sb('profiles', {
+        method: 'POST',
+        body: JSON.stringify({
+          id: authRes.user?.id || crypto.randomUUID(),
+          username, phone,
+          photo_url: photoBase64 || null,
+          pin_hash: btoa(pin),
+          token, email
+        })
+      });
+      const profile = Array.isArray(rows) ? rows[0] : rows;
+      saveSession(authRes.user, profile);
+      toast('Welcome to Tabify!');
+    } else {
+      const profiles = await sb(`profiles?phone=eq.${encodeURIComponent(phone)}&limit=1`);
+      if (!profiles?.length) throw new Error('No account with that phone number');
+      const p = profiles[0];
+      if (atob(p.pin_hash) !== pin) throw new Error('Incorrect PIN');
+      const authRes = await sbSignIn(p.email, `tabify_${pin}_${phone.replace(/\D/g,'').slice(-4)}`);
+      saveSession(authRes.user || { id: p.id }, p);
+      toast(`Welcome back, ${p.username}!`);
+    }
+    await loadData();
+    showScreen('home');
+  } catch(e) {
+    toast(e.message || 'Something went wrong', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = isSignup ? 'Create account' : 'Sign in';
+  }
+}
+
+function saveSession(user, profile) {
+  currentUser = user;
+  currentProfile = profile;
+  localStorage.setItem('tabify_session', JSON.stringify({ user, profile }));
+}
+
+function logout() {
+  localStorage.removeItem('tabify_session');
+  currentUser = null; currentProfile = null;
+  allDebts = []; allTx = [];
+  showScreen('auth');
+  document.getElementById('navbar').style.display = 'none';
+}
+
+// ── Data ─────────────────────────────────────────────────────────────────────
+async function loadData() {
+  if (!currentProfile) return;
+  try {
+    const [d, t] = await Promise.all([
+      sb(`debts?or=(creditor_id.eq.${currentProfile.id},debtor_id.eq.${currentProfile.id})&order=created_at.desc`),
+      sb(`transactions?or=(from_id.eq.${currentProfile.id},to_id.eq.${currentProfile.id})&order=created_at.desc&limit=30`)
+    ]);
+    allDebts = d || [];
+    allTx = t || [];
+    renderHome();
+    renderHistory();
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+// ── Render Home ───────────────────────────────────────────────────────────────
+function renderHome() {
+  if (!currentProfile) return;
+  document.getElementById('home-greeting').textContent = `Hey, ${currentProfile.username} 👋`;
+
+  const owedToMe = allDebts.filter(d => d.creditor_id === currentProfile.id && !d.settled);
+  const iOwe = allDebts.filter(d => d.debtor_id === currentProfile.id && !d.settled);
+  const totalOwed = owedToMe.reduce((s,d) => s + Number(d.amount||0), 0);
+  const totalIOwe = iOwe.reduce((s,d) => s + Number(d.amount||0), 0);
+  const net = totalOwed - totalIOwe;
+
+  const netEl = document.getElementById('net-balance');
+  netEl.textContent = (net >= 0 ? '+' : '') + '$' + Math.abs(net).toFixed(2);
+  netEl.style.color = net >= 0 ? '#00e5a0' : '#ff8080';
+
+  document.getElementById('total-owed').textContent = '$' + totalOwed.toFixed(2);
+  document.getElementById('total-iowe').textContent = '$' + totalIOwe.toFixed(2);
+
+  const list = document.getElementById('debt-list');
+  list.innerHTML = '';
+
+  if (owedToMe.length === 0 && iOwe.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🤝</div><div class="empty-title">All clean!</div><div class="empty-text">No active debts. Tap + Record debt to add one.</div></div>`;
+    return;
+  }
+
+  if (owedToMe.length > 0) {
+    list.innerHTML += `<div class="section-header" style="margin-top:24px">They owe you</div>`;
+    owedToMe.forEach(d => list.innerHTML += debtItemHTML(d, true));
+  }
+  if (iOwe.length > 0) {
+    list.innerHTML += `<div class="section-header" style="margin-top:24px">You owe</div>`;
+    iOwe.forEach(d => list.innerHTML += debtItemHTML(d, false));
+  }
+}
+
+function debtItemHTML(d, isCreditor) {
+  const name = isCreditor ? (d.debtor_name || 'Unknown') : (d.creditor_name || 'Unknown');
+  const note = d.note || (isCreditor ? 'Owes you' : 'You owe');
+  const color = isCreditor ? '#00e5a0' : '#ff8080';
+  const prefix = isCreditor ? '+' : '-';
+  const date = new Date(d.created_at).toLocaleDateString();
+  return `
+    <div class="debt-item">
+      ${avatarHTML(name, null, 42)}
+      <div class="debt-info">
+        <div class="debt-name">${esc(name)}</div>
+        <div class="debt-note">${esc(note)}</div>
+      </div>
+      <div class="debt-amount">
+        <div class="debt-val" style="color:${color}">${prefix}$${Number(d.amount||0).toFixed(2)}</div>
+        <div class="debt-date">${date}</div>
+      </div>
+    </div>`;
+}
+
+function renderHistory() {
+  const list = document.getElementById('tx-list');
+  if (!list) return;
+  if (allTx.length === 0) {
+    list.innerHTML = '<div class="empty-state" style="padding:40px 0"><div class="empty-icon">📋</div><div class="empty-text">No activity yet</div></div>';
+    return;
+  }
+  list.innerHTML = allTx.map(t => {
+    const sent = t.from_id === currentProfile?.id;
+    const who = sent ? (t.to_name || 'someone') : (t.from_name || 'someone');
+    const label = sent ? `To ${who}` : `From ${who}`;
+    const color = sent ? '#ff8080' : '#00e5a0';
+    const prefix = sent ? '-' : '+';
+    const date = new Date(t.created_at).toLocaleDateString();
+    return `
+      <div class="tx-item">
+        <div class="tx-icon ${sent ? 'tx-sent' : 'tx-recv'}">${sent ? '↑' : '↓'}</div>
+        <div style="flex:1">
+          <div class="tx-who">${esc(label)}</div>
+          <div class="tx-meta">${esc(t.note || 'Payment')} · ${date}</div>
+        </div>
+        <div class="tx-amount" style="color:${color}">${prefix}$${Number(t.amount||0).toFixed(2)}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── Pay ───────────────────────────────────────────────────────────────────────
+async function lookupToken() {
+  const token = document.getElementById('token-input').value.trim().toUpperCase();
+  if (!token) return;
+  const btn = document.getElementById('find-btn');
+  btn.disabled = true; btn.textContent = '…';
+  try {
+    const profiles = await sb(`profiles?token=eq.${token}&limit=1`);
+    if (!profiles?.length) { toast('Token not found', 'error'); return; }
+    foundProfile = profiles[0];
+    document.getElementById('found-card').innerHTML = `
+      ${avatarHTML(foundProfile.username, foundProfile.photo_url, 50)}
+      <div>
+        <div class="found-name">${esc(foundProfile.username)}</div>
+        <div class="found-phone">${esc(foundProfile.phone || '')}</div>
+      </div>
+      <div class="found-dot"></div>`;
+    document.getElementById('pay-btn').textContent = `Pay ${foundProfile.username}`;
+    document.getElementById('pay-step1').style.display = 'none';
+    document.getElementById('pay-step2').style.display = 'block';
+  } catch(e) {
+    toast('Lookup failed', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Find';
+  }
+}
+
+function resetPay() {
+  document.getElementById('pay-step2').style.display = 'none';
+  document.getElementById('pay-step1').style.display = 'block';
+  document.getElementById('token-input').value = '';
+  document.getElementById('pay-amount').value = '';
+  document.getElementById('pay-note').value = '';
+  foundProfile = null;
+}
+
+async function doPay() {
+  const amount = parseFloat(document.getElementById('pay-amount').value);
+  const note = document.getElementById('pay-note').value.trim();
+  if (!amount || isNaN(amount)) return toast('Enter a valid amount', 'error');
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const debtToSettle = allDebts.find(d =>
+      d.creditor_id === foundProfile.id &&
+      d.debtor_id === currentProfile.id &&
+      !d.settled &&
+      Math.abs(d.amount - amount) < 0.01
+    );
+    if (debtToSettle) {
+      await sb(`debts?id=eq.${debtToSettle.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ settled: true, settled_at: new Date().toISOString() })
+      });
+    }
+    await sb('transactions', {
+      method: 'POST',
+      body: JSON.stringify({
+        from_id: currentProfile.id,
+        to_id: foundProfile.id,
+        from_name: currentProfile.username,
+        to_name: foundProfile.username,
+        amount, note
+      })
+    });
+    await loadData();
+    toast(`Paid ${foundProfile.username} $${amount.toFixed(2)}`);
+    resetPay();
+    showScreen('home');
+  } catch(e) {
+    toast(e.message || 'Payment failed', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = foundProfile ? `Pay ${foundProfile.username}` : 'Pay';
+  }
+}
+
+// ── My QR ─────────────────────────────────────────────────────────────────────
+function renderMyQR() {
+  if (!currentProfile) return;
+  document.getElementById('myqr-name').textContent = currentProfile.username;
+  document.getElementById('myqr-phone').textContent = currentProfile.phone || '';
+  document.getElementById('myqr-token').textContent = currentProfile.token;
+  document.getElementById('myqr-avatar').innerHTML = avatarHTML(currentProfile.username, currentProfile.photo_url, 64);
+  drawQR(currentProfile.token);
+}
+
+function drawQR(value) {
+  const canvas = document.getElementById('qr-canvas');
+  const ctx = canvas.getContext('2d');
+  const cells = 21;
+  const size = 200;
+  const cell = Math.floor(size / cells);
+  canvas.width = cells * cell;
+  canvas.height = cells * cell;
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const seed = value.split('').reduce((a,c) => a + c.charCodeAt(0), 0);
+  const rng = (x, y) => {
+    const n = Math.sin((x * 127 + y * 311 + seed * 17) * 9301 + 49297) * 233280;
+    return (n - Math.floor(n)) > 0.5;
+  };
+  const corners = [[0,0],[0,cells-7],[cells-7,0]];
+  const inCorner = (x,y) => corners.some(([cx,cy]) => x>=cx && x<cx+7 && y>=cy && y<cy+7);
+
+  ctx.fillStyle = '#00e5a0';
+  for (let y = 0; y < cells; y++) {
+    for (let x = 0; x < cells; x++) {
+      let on = false;
+      const c = corners.find(([cx,cy]) => x>=cx && x<cx+7 && y>=cy && y<cy+7);
+      if (c) {
+        const lx = x-c[0], ly = y-c[1];
+        on = lx===0 || lx===6 || ly===0 || ly===6 || (lx>=2&&lx<=4&&ly>=2&&ly<=4);
+      } else {
+        on = rng(x, y);
+      }
+      if (on) ctx.fillRect(x*cell, y*cell, cell-1, cell-1);
+    }
+  }
+}
+
+// ── Add Debt ─────────────────────────────────────────────────────────────────
+function setDebtType(t) {
+  debtType = t;
+  document.getElementById('type-owe-me').className = 'type-btn' + (t==='owe_me' ? ' active' : '');
+  document.getElementById('type-i-owe').className = 'type-btn' + (t==='i_owe' ? ' active' : '');
+}
+
+async function saveDebt() {
+  const name = document.getElementById('debt-name').value.trim();
+  const phone = document.getElementById('debt-phone').value.trim();
+  const amount = parseFloat(document.getElementById('debt-amount').value);
+  const note = document.getElementById('debt-note').value.trim();
+  if (!name) return toast('Name required', 'error');
+  if (!amount || isNaN(amount)) return toast('Amount required', 'error');
+
+  const btn = document.getElementById('save-debt-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const isCreditor = debtType === 'owe_me';
+    let otherProfile = null;
+    if (phone) {
+      const res = await sb(`profiles?phone=eq.${encodeURIComponent(phone)}&limit=1`);
+      if (res?.length) otherProfile = res[0];
+    }
+    await sb('debts', {
+      method: 'POST',
+      body: JSON.stringify({
+        creditor_id: isCreditor ? currentProfile.id : (otherProfile?.id || null),
+        debtor_id: isCreditor ? (otherProfile?.id || null) : currentProfile.id,
+        creditor_name: isCreditor ? currentProfile.username : name,
+        debtor_name: isCreditor ? name : currentProfile.username,
+        amount, note, settled: false
+      })
+    });
+    await loadData();
+    toast('Debt recorded!');
+    showScreen('home');
+  } catch(e) {
+    toast(e.message || 'Failed to save', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save debt';
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function avatarHTML(name, photo, size) {
+  if (photo) {
+    return `<img src="${esc(photo)}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="${esc(name)}">`;
+  }
+  const initials = (name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const palettes = [['#1a1f3a','#7c6ef5'],['#0f2027','#00c896'],['#1a0f2e','#e060ff'],['#0f1a1a','#00d4aa']];
+  const [bg,fg] = palettes[(name||'').charCodeAt(0) % palettes.length];
+  const fs = Math.round(size * 0.36);
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${fs}px;flex-shrink:0;border:1.5px solid ${fg}33;letter-spacing:0.02em">${initials}</div>`;
+}
+
+function esc(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+(function init() {
+  const saved = localStorage.getItem('tabify_session');
+  if (saved) {
+    try {
+      const { user, profile } = JSON.parse(saved);
+      currentUser = user;
+      currentProfile = profile;
+      document.getElementById('splash').style.display = 'none';
+      loadData().then(() => showScreen('home'));
+      return;
+    } catch {}
+  }
+  setTimeout(() => {
+    document.getElementById('splash').style.display = 'none';
+    showScreen('auth');
+  }, 1800);
+})();
+</script>
+</body>
+</html>
