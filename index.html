@@ -316,24 +316,54 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     <div id="tx-list"></div>
   </div>
 
-  <!-- MY QR SCREEN (nav) -->
-  <div id="myqr-screen" class="screen">
-    <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px;text-align:center">Payment code</div>
-    <div style="color:#7d8590;font-size:14px;margin-bottom:28px;text-align:center">Share so others can pay you</div>
+<!-- PROFILE/MANAGEMENT SCREEN -->
+<div id="profile-screen" class="screen pb-nav">
+  <div style="padding: 52px 20px 20px;">
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:20px;">Manage Profile</div>
+
+    <!-- Display/Edit Wrapper -->
+    <div id="profile-display-wrap">
+        <div class="photo-upload" style="margin-bottom: 24px;">
+            <div class="photo-circle" id="profile-photo-display" style="width:96px; height:96px; border-style: solid; border-color: #00e5a033;">
+                <!-- avatarHTML will populate this -->
+            </div>
+        </div>
+        <div class="field"><label>Username</label><input type="text" id="profile-username-display" readonly style="background:#0d1117; opacity: 0.8;"></div>
+        <div class="field"><label>Phone</label><input type="text" id="profile-phone-display" readonly style="background:#0d1117; opacity: 0.8;"></div>
+        <button class="btn-primary" id="edit-profile-btn" onclick="toggleProfileEdit(true)">Edit Profile</button>
+      </div>
+
+    <div id="profile-edit-form" style="display:none;">
+        <div class="photo-upload" style="margin-bottom: 24px;">
+            <div class="photo-circle" onclick="document.getElementById('profile-photo-file').click()" style="width:96px; height:96px;">
+                <img id="profile-photo-preview" src="" style="display:none; width:96px; height:96px;" alt="">
+                <div id="profile-photo-ph" style="display:flex;flex-direction:column;align-items:center;gap:3px">
+                    <span style="font-size:32px">📷</span><span style="font-size:12px;color:#7d8590">Change</span>
+                </div>
+            </div>
+            <input type="file" id="profile-photo-file" accept="image/*" style="display:none">
+        </div>
+        <div class="field"><label>Username</label><input type="text" id="profile-username-input"></div>
+        <div class="field"><label>Phone</label><input type="text" id="profile-phone-input" disabled><div style="font-size:11px; color:#7d8590; margin-top:4px;">Phone number cannot be changed.</div></div>
+        <button class="btn-primary" onclick="saveProfileChanges()">Save Changes</button>
+        <button class="btn-ghost" onclick="toggleProfileEdit(false)" style="margin-top:10px">Cancel</button>
+      </div>
+
+    <div class="divider" style="margin: 28px 0;"></div>
+
+    <!-- QR Code Section -->
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;margin-bottom:6px;">Your Payment Code</div>
+    <div style="color:#7d8590;font-size:14px;margin-bottom:20px;">Share this so others can pay you.</div>
     <div class="qr-card" style="width:100%">
-      <div id="myqr-avatar"></div>
-      <div style="text-align:center">
-        <div style="font-weight:700;font-size:20px" id="myqr-name"></div>
-        <div style="color:#7d8590;font-size:13px" id="myqr-phone"></div>
+      <div id="profile-qr-avatar"></div>
+      <div id="qr-canvas-profile"></div>
+      <div style="background:#161b22;border-radius:12px;padding:12px 24px;text-align:center; width:100%;">
+        <div style="font-size:11px;color:#7d8590;margin-bottom:4px">Your Token</div>
+        <div class="qr-token" id="profile-qr-token-val"></div>
       </div>
-      <div id="qr-canvas-main"></div>
-      <div style="background:#161b22;border-radius:12px;padding:12px 24px;text-align:center">
-        <div style="font-size:11px;color:#7d8590;margin-bottom:4px">Your token</div>
-        <div class="qr-token" id="myqr-token-val"></div>
-      </div>
-      <button class="btn-primary" style="width:100%;margin-top:4px" onclick="regenToken(true)">↻ Generate new token</button>
+      <button class="btn-ghost" style="width:100%;margin-top:10px" onclick="regenToken()">↻ Generate New Token</button>
     </div>
-    <div style="font-size:13px;color:#7d8590;text-align:center;margin-top:20px;line-height:1.6">Token refreshes after each use.<br>Tap above to generate one manually.</div>
+  </div>
   </div>
 
   <!-- NAVBAR -->
@@ -344,8 +374,8 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     <button class="nav-item" id="nav-history" onclick="gotoScreen('history')">
       <div class="nav-icon">↯</div><div class="nav-label">History</div>
     </button>
-    <button class="nav-item" id="nav-myqr-screen" onclick="gotoScreen('myqr-screen')">
-      <div class="nav-icon">▣</div><div class="nav-label">My QR</div>
+    <button class="nav-item" id="nav-profile-screen" onclick="gotoScreen('profile-screen')">
+      <div class="nav-icon">👤</div><div class="nav-label">Management</div>
     </button>
   </div>
 
@@ -482,6 +512,7 @@ let pendingTx = [];     // pending for me to confirm
 let isSignup = false;
 let pinVal = '';
 let photoBase64 = null;
+let newProfilePhotoBase64 = null;
 let payTab = 'scan';
 let foundPayProfile = null;
 let foundReqProfile = null;
@@ -624,6 +655,18 @@ document.getElementById('photo-file').addEventListener('change', e => {
   rd.readAsDataURL(f);
 });
 
+document.getElementById('profile-photo-file').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = ev => {
+    newProfilePhotoBase64 = ev.target.result;
+    const img = document.getElementById('profile-photo-preview');
+    img.src = newProfilePhotoBase64;
+    img.style.display = 'block';
+    document.getElementById('profile-photo-ph').style.display = 'none';
+  };
+  rd.readAsDataURL(f);
+});
 // ═══════════════════════════════════════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════════════════════════════════════
@@ -714,7 +757,7 @@ async function loadData() {
     pendingTx = allTx.filter(tx => tx.status === 'pending' && tx.to_id === ME.id);
     renderHome();
     renderHistory();
-    renderMyQR();
+    renderProfileScreen();
     updateNotifBadge();
   } catch(e) {
     console.error(e);
@@ -821,18 +864,64 @@ function renderHistory() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// MY QR SCREEN
+// PROFILE/MANAGEMENT SCREEN
 // ═══════════════════════════════════════════════════════════════════════════
-function renderMyQR() {
+function renderProfileScreen() {
   if (!ME) return;
-  document.getElementById('myqr-name').textContent = ME.username;
-  document.getElementById('myqr-phone').textContent = ME.phone||'';
-  document.getElementById('myqr-avatar').innerHTML = avatarHTML(ME.username, ME.photo_url, 64);
-  document.getElementById('myqr-token-val').textContent = ME.token||'';
-  drawQR('qr-canvas-main', ME.token||'', 200);
+  
+  // Part 1: Profile Info Display
+  document.getElementById('profile-photo-display').innerHTML = avatarHTML(ME.username, ME.photo_url, 96);
+  document.getElementById('profile-username-display').value = ME.username;
+  document.getElementById('profile-phone-display').value = ME.phone;
+
+  // Part 2: Profile Edit Form
+  document.getElementById('profile-username-input').value = ME.username;
+  document.getElementById('profile-phone-input').value = ME.phone;
+  const photoPreview = document.getElementById('profile-photo-preview');
+  const photoPh = document.getElementById('profile-photo-ph');
+  if (ME.photo_url) {
+      photoPreview.src = ME.photo_url;
+      photoPreview.style.display = 'block';
+      photoPh.style.display = 'none';
+  } else {
+      photoPreview.src = '';
+      photoPreview.style.display = 'none';
+      photoPh.style.display = 'flex';
+  }
+
+  // Part 3: QR Code Display
+  document.getElementById('profile-qr-avatar').innerHTML = avatarHTML(ME.username, ME.photo_url, 64);
+  document.getElementById('profile-qr-token-val').textContent = ME.token || '';
+  drawQR('qr-canvas-profile', ME.token || '', 200);
 }
 
-async function regenToken(fromScreen) {
+function toggleProfileEdit(isEditing) {
+    document.getElementById('profile-display-wrap').style.display = isEditing ? 'none' : 'block';
+    document.getElementById('profile-edit-form').style.display = isEditing ? 'block' : 'none';
+    if (isEditing) {
+        newProfilePhotoBase64 = null; // Reset photo state
+        renderProfileScreen(); // re-populate form with original data
+    }
+}
+
+async function saveProfileChanges() {
+    if (!ME) return;
+    const newUsername = document.getElementById('profile-username-input').value.trim();
+    if (!newUsername) return toast('Username cannot be empty', 'e');
+    const updates = { username: newUsername };
+    if (newProfilePhotoBase64) { updates.photo_url = newProfilePhotoBase64; }
+    try {
+        const [updatedProfile] = await sb(`profiles?id=eq.${ME.id}`, { method: 'PATCH', body: JSON.stringify(updates) });
+        Object.assign(ME, updatedProfile);
+        const sess = JSON.parse(localStorage.getItem('tabify_session') || '{}');
+        if (sess.profile) { Object.assign(sess.profile, updatedProfile); localStorage.setItem('tabify_session', JSON.stringify(sess)); }
+        toast('Profile updated successfully!');
+        toggleProfileEdit(false);
+        renderHome(); renderProfileScreen();
+    } catch (e) { toast(e.message || 'Failed to update profile', 'e'); }
+}
+
+async function regenToken() {
   if (!ME) return;
   const newTok = genToken();
   try {
@@ -840,15 +929,8 @@ async function regenToken(fromScreen) {
     ME.token = newTok;
     const sess = JSON.parse(localStorage.getItem('tabify_session')||'{}');
     if (sess.profile) { sess.profile.token = newTok; localStorage.setItem('tabify_session', JSON.stringify(sess)); }
-    if (fromScreen) {
-      renderMyQR();
-    } else {
-      // Also update the overlay if it's open
-      if (document.getElementById('qr-overlay').classList.contains('open')) {
-          document.getElementById('qr-token-val').textContent = ME.token || '';
-          drawQR('qr-canvas-ov', ME.token || '', 180);
-      }
-    }
+    if (document.getElementById('profile-screen').classList.contains('active')) { renderProfileScreen(); }
+    if (document.getElementById('qr-overlay').classList.contains('open')) { openQR(); }
     toast('New token generated!');
   } catch(e) { toast('Failed to regenerate token','e'); }
 }
@@ -1073,14 +1155,14 @@ async function submitPay() {
   try {
     await sb('transactions', {
       method:'POST',
-      body:JSON.stringify({
+      body: JSON.stringify({
         type:'pay', from_id:ME.id, to_id:foundPayProfile.id,
         from_name:ME.username, to_name:foundPayProfile.username,
         amount, note, status:'pending'
       })
     });
     // Regen token after use
-    await regenToken(false);
+    await regenToken();
     closeOverlay('pay-overlay');
     await loadData();
     toast(`Payment request sent to ${foundPayProfile.username} ✅`);
@@ -1227,7 +1309,7 @@ function openQR() {
   }, 50);
 }
 
-const navScreens = ['home','history','myqr-screen'];
+const navScreens = ['home','history','profile-screen'];
 function gotoScreen(id) {
   navScreens.forEach(s => {
     const el=document.getElementById(s);
@@ -1241,7 +1323,7 @@ function gotoScreen(id) {
   window.scrollTo(0,0);
   if (id === 'home') renderHome();
   if (id === 'history') renderHistory();
-  if (id === 'myqr-screen') renderMyQR();
+  if (id === 'profile-screen') renderProfileScreen();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
