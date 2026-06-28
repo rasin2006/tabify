@@ -949,7 +949,8 @@ function setPayTab(tab) {
   });
   document.getElementById('pay-found').style.display = 'none';
   if (tab !== 'scan' && camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
-  if (tab === 'scan') startCamera();
+  if (tab === 'scan') { startCamera()
+  }
 }
 
 function scanQR() {
@@ -973,7 +974,6 @@ function scanQR() {
 }
 
 async function startCamera() {
-  if (camStream) return;
   try {
     camStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
     const vid = document.getElementById('cam-video');
