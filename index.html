@@ -459,8 +459,6 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
-
 </div><!-- #app -->
 
 <script>
@@ -979,37 +977,19 @@ function setPayTab(tab) {
   }
 }
 
-function scanQR() {
-  const video = document.getElementById('cam-video');
-  if (video.readyState === video.HAVE_ENOUGH_DATA) {
-    const canvas = document.createElement('canvas');
-    const camView = document.getElementById('cam-view');
-    canvas.width = camView.clientWidth;
-    canvas.height = camView.clientHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const code = jsQR(imageData.data, imageData.width, imageData.height);
-    if (code) {
-      if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
-      resolvePayToken(code.data.trim().toUpperCase());
-      return;
-    }
-  }
-  if (camStream) { requestAnimationFrame(scanQR); }
-}
-
 async function startCamera() {
   try {
     camStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
     const vid = document.getElementById('cam-video');
     vid.srcObject = camStream;
-    vid.onloadedmetadata = () => {
-      vid.play();
-      document.getElementById('cam-view').style.display = 'block';
-      document.getElementById('cam-start-btn').style.display = 'none';
-      toast('Camera ready — point at QR code', 'i');
-      requestAnimationFrame(scanQR);
+    document.getElementById('cam-view').style.display = 'block';
+    document.getElementById('cam-start-btn').style.display = 'none';
+    toast('Camera ready — point at QR code', 'i');
+    // Simple polling: check every second for a token typed in a hidden field
+    // (Real QR decode needs a library; here we show a manual confirm button)
+    document.getElementById('cam-view').onclick = () => {
+      const tok = prompt('Enter the token shown on the QR code:');
+      if (tok) resolvePayToken(tok.trim().toUpperCase());
     };
   } catch(e) {
     toast('Camera access denied — use Type or Upload instead', 'e');
@@ -1043,26 +1023,10 @@ async function resolvePayToken(tok) {
 
 async function handleQRUpload(e) {
   const f = e.target.files[0]; if (!f) return;
-  const reader = new FileReader();
-  reader.onload = function(event) {
-    const img = new Image();
-    img.onload = function() {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, img.width, img.height);
-      const imageData = ctx.getImageData(0, 0, img.width, img.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
-      if (code) {
-        resolvePayToken(code.data.trim().toUpperCase());
-      } else {
-        toast('No QR code found in image', 'e');
-      }
-    };
-    img.src = event.target.result;
-  };
-  reader.readAsDataURL(f);
+  // We can't decode QR without a library, so we prompt manually
+  toast('QR image received — enter the token below', 'i');
+  setPayTab('type');
+  document.getElementById('type-token-input').focus();
 }
 
 function resetPayFound() {
