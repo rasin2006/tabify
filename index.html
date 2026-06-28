@@ -2,561 +2,668 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Tabify</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; background: #0d1117; color: #e6edf3; font-family: 'Inter', sans-serif; }
-  #app { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
-  input, button, select, textarea { font-family: inherit; }
-  input:focus { outline: none; }
-  button { cursor: pointer; }
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-thumb { background: #21262d; border-radius: 4px; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0a0e17;color:#e6edf3;font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent}
+#app{max-width:480px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden}
+input,button,select,textarea{font-family:inherit}
+input:focus{outline:none}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:#21262d;border-radius:4px}
 
-  .screen { min-height: 100vh; }
+/* ── Layout ── */
+.screen{min-height:100vh;display:none}
+.screen.active{display:block}
+.pb-nav{padding-bottom:90px}
 
-  /* Splash */
-  #splash { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0d1117; }
-  .splash-logo { width: 72px; height: 72px; border-radius: 22px; background: linear-gradient(135deg,#00e5a0,#0070f3); display: flex; align-items: center; justify-content: center; font-size: 36px; margin-bottom: 20px; }
-  .splash-title { font-family: 'Space Grotesk', sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -0.03em; }
-  .splash-sub { color: #7d8590; font-size: 15px; margin-top: 6px; }
-  .splash-bar { margin-top: 48px; width: 40px; height: 4px; border-radius: 2px; background: #00e5a0; animation: pulse 1s infinite alternate; }
-  @keyframes pulse { from { opacity: 0.2; } to { opacity: 1; } }
+/* ── Splash ── */
+#splash{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a0e17;min-height:100vh}
+.splash-logo{width:76px;height:76px;border-radius:24px;background:linear-gradient(135deg,#00e5a0,#0070f3);display:flex;align-items:center;justify-content:center;font-size:38px;margin-bottom:22px;box-shadow:0 0 40px #00e5a044}
+.splash-title{font-family:'Space Grotesk',sans-serif;font-size:36px;font-weight:700;letter-spacing:-0.03em}
+.splash-sub{color:#7d8590;font-size:15px;margin-top:6px}
+.splash-dot{margin-top:52px;width:8px;height:8px;border-radius:50%;background:#00e5a0;animation:pulse 1s infinite alternate}
+@keyframes pulse{from{opacity:.2;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
 
-  /* Auth */
-  #auth { background: #0d1117; padding: 60px 28px 40px; }
-  .auth-title { font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 8px; }
-  .auth-sub { color: #7d8590; font-size: 15px; margin-bottom: 36px; }
+/* ── Auth ── */
+#auth{background:#0a0e17;padding:60px 28px 40px;min-height:100vh}
+.auth-title{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;letter-spacing:-0.02em;margin-bottom:8px}
+.auth-sub{color:#7d8590;font-size:15px;margin-bottom:36px}
+.photo-upload{display:flex;flex-direction:column;align-items:center;margin-bottom:28px}
+.photo-circle{width:82px;height:82px;border-radius:50%;background:#161b22;border:2px dashed #2d333b;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:border-color .2s}
+.photo-circle:hover{border-color:#00e5a0}
+.photo-circle img{width:100%;height:100%;object-fit:cover}
+.photo-label{font-size:12px;color:#00e5a0;margin-top:8px}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:13px;color:#7d8590;margin-bottom:8px;font-weight:500}
+.field input{width:100%;padding:14px 16px;background:#161b22;border:1.5px solid #21262d;border-radius:12px;color:#e6edf3;font-size:15px;transition:border-color .2s}
+.field input:focus{border-color:#00e5a0}
+.field input::placeholder{color:#3d4449}
+.pin-section{margin-bottom:24px}
+.pin-label{font-size:13px;color:#7d8590;margin-bottom:12px;font-weight:500}
+.pin-display{display:flex;gap:10px;justify-content:center;margin-bottom:16px}
+.pin-dot{width:52px;height:56px;border-radius:12px;background:#161b22;border:1.5px solid #21262d;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#e6edf3;transition:border-color .2s}
+.pin-dot.filled{border-color:#00e5a033;color:#00e5a0}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:260px;margin:0 auto}
+.numpad-btn{padding:14px;background:#161b22;border:1.5px solid #21262d;border-radius:12px;font-size:20px;font-weight:600;color:#e6edf3;transition:background .15s,border-color .15s}
+.numpad-btn:active{background:#21262d;border-color:#30363d}
+.numpad-btn.del{font-size:18px;color:#7d8590}
+.numpad-btn.empty{background:transparent;border-color:transparent;pointer-events:none}
+.btn-primary{width:100%;padding:15px;background:#00e5a0;border:none;border-radius:12px;font-weight:700;font-size:16px;color:#0d1117;transition:opacity .2s;margin-top:4px}
+.btn-primary:disabled{opacity:.5}
+.btn-ghost{width:100%;padding:13px;background:transparent;border:1.5px solid #21262d;border-radius:12px;font-weight:600;font-size:15px;color:#7d8590;margin-top:8px}
+.auth-switch{text-align:center;margin-top:20px;font-size:14px;color:#7d8590}
+.auth-switch span{color:#00e5a0;cursor:pointer;font-weight:600}
 
-  .photo-upload { display: flex; flex-direction: column; align-items: center; margin-bottom: 28px; }
-  .photo-circle { width: 80px; height: 80px; border-radius: 50%; background: #161b22; border: 2px dashed #21262d; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
-  .photo-circle img { width: 100%; height: 100%; object-fit: cover; }
-  .photo-hint { font-size: 11px; color: #7d8590; margin-top: 4px; }
-  .photo-label { font-size: 12px; color: #00e5a0; margin-top: 8px; }
+/* ── Nav ── */
+#navbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#0d1117;border-top:1px solid #1c2128;display:none;padding:8px 0 22px;z-index:200}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;padding:4px 0;position:relative}
+.nav-icon{font-size:22px;color:#4d5560;transition:color .15s}
+.nav-label{font-size:10px;color:#4d5560;font-weight:500;transition:color .15s}
+.nav-item.active .nav-icon,.nav-item.active .nav-label{color:#00e5a0}
+.nav-item.active .nav-label{font-weight:700}
+.nav-badge{position:absolute;top:0;right:calc(50% - 18px);background:#ff5555;color:#fff;font-size:10px;font-weight:700;border-radius:99px;padding:1px 5px;min-width:16px;text-align:center}
 
-  .field { margin-bottom: 20px; }
-  .field label { display: block; font-size: 13px; color: #7d8590; margin-bottom: 8px; }
-  .field input { width: 100%; padding: 14px 16px; background: #161b22; border: 1.5px solid #21262d; border-radius: 12px; color: #e6edf3; font-size: 15px; transition: border-color .2s; }
-  .field input:focus { border-color: #00e5a0; }
-  .field input::placeholder { color: #3d4449; }
+/* ── Home ── */
+#home{background:#0a0e17}
+.home-header{padding:52px 20px 20px;background:linear-gradient(180deg,#0d1929 0%,#0a0e17 100%)}
+.home-top{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.home-avatar{position:relative;cursor:pointer}
+.home-avatar-img{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid #00e5a033}
+.home-name{flex:1}
+.home-greeting{font-size:12px;color:#7d8590}
+.home-username{font-size:17px;font-weight:700;margin-top:1px}
+.home-actions{display:flex;gap:8px;align-items:center}
+.icon-btn{background:#161b22;border:1px solid #21262d;color:#7d8590;border-radius:10px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:18px;position:relative;transition:border-color .15s}
+.icon-btn:hover{border-color:#30363d}
+.icon-btn .badge{position:absolute;top:-4px;right:-4px;background:#ff5555;width:14px;height:14px;border-radius:50%;font-size:9px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.balance-card{background:#161b22;border-radius:20px;padding:22px;border:1px solid #1c2128;margin-bottom:16px}
+.balance-label{font-size:12px;color:#7d8590;margin-bottom:4px;font-weight:500}
+.balance-amount{font-family:'Space Grotesk',sans-serif;font-size:40px;font-weight:700;letter-spacing:-0.03em;word-break:break-all}
+.balance-sub{font-size:13px;color:#7d8590;margin-top:2px}
+.balance-row{display:flex;gap:0;margin-top:18px;background:#0d1117;border-radius:12px;overflow:hidden}
+.balance-cell{flex:1;padding:12px;text-align:center}
+.balance-cell+.balance-cell{border-left:1px solid #1c2128}
+.balance-cell-label{font-size:11px;color:#7d8590;margin-bottom:4px}
+.balance-cell-val{font-size:16px;font-weight:700}
+.action-row{display:flex;gap:10px;margin-top:0}
+.action-btn{flex:1;padding:14px;border:none;border-radius:14px;font-weight:700;font-size:15px;display:flex;flex-direction:column;align-items:center;gap:4px;transition:opacity .15s}
+.action-btn:active{opacity:.8}
+.action-btn .ab-icon{font-size:22px}
+.action-btn .ab-label{font-size:13px}
+.pay-btn-main{background:linear-gradient(135deg,#00e5a0,#00b87a);color:#0d1117}
+.req-btn-main{background:#161b22;border:1.5px solid #21262d;color:#e6edf3}
+.section-wrap{padding:0 20px}
+.section-head{font-size:11px;color:#7d8590;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin:20px 0 6px}
+.debt-item{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #161b22;cursor:pointer}
+.debt-item:last-child{border-bottom:none}
+.debt-info{flex:1;min-width:0}
+.debt-name{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.debt-meta{font-size:12px;color:#7d8590;margin-top:2px}
+.debt-right{text-align:right;flex-shrink:0}
+.debt-val{font-weight:700;font-size:15px}
+.debt-date{font-size:11px;color:#7d8590;margin-top:2px}
+.empty-state{text-align:center;padding:48px 24px;color:#7d8590}
+.empty-icon{font-size:38px;margin-bottom:10px}
+.empty-title{font-weight:600;color:#e6edf3;margin-bottom:5px;font-size:15px}
+.empty-sub{font-size:13px;line-height:1.5}
 
-  .pin-row { display: flex; gap: 12px; justify-content: center; margin-bottom: 24px; }
-  .pin-label { font-size: 13px; color: #7d8590; margin-bottom: 12px; }
-  .pin-box { width: 56px; height: 64px; text-align: center; font-size: 24px; font-weight: 700; background: #161b22; border: 1.5px solid #21262d; border-radius: 12px; color: #e6edf3; transition: border-color .2s; }
-  .pin-box:focus { border-color: #00e5a0; }
-  .pin-box.filled { border-color: #00e5a033; }
+/* ── Modals / overlays ── */
+.overlay{position:fixed;inset:0;background:#000a;display:flex;align-items:flex-end;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.open{opacity:1;pointer-events:all}
+.sheet{background:#161b22;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:20px 24px 36px;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.overlay.open .sheet{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:#2d333b;margin:0 auto 20px}
+.sheet-title{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;margin-bottom:6px}
+.sheet-sub{font-size:13px;color:#7d8590;margin-bottom:22px}
 
-  .btn-primary { width: 100%; padding: 15px; background: #00e5a0; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; color: #0d1117; transition: opacity .2s; }
-  .btn-primary:disabled { opacity: 0.6; }
-  .btn-primary:active { opacity: 0.85; }
-  .auth-switch { text-align: center; margin-top: 20px; font-size: 14px; color: #7d8590; }
-  .auth-switch span { color: #00e5a0; cursor: pointer; font-weight: 600; }
+/* ── QR overlay ── */
+#qr-overlay .sheet{padding-bottom:32px}
+.qr-card{display:flex;flex-direction:column;align-items:center;gap:16px;background:#0d1117;border-radius:16px;padding:24px}
+.qr-token{font-family:monospace;font-size:26px;font-weight:700;letter-spacing:.15em;color:#00e5a0}
+.qr-regen{font-size:12px;color:#7d8590;margin-top:2px;cursor:pointer;text-decoration:underline}
 
-  /* Nav */
-  #navbar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #0d1117; border-top: 1px solid #21262d; display: flex; padding: 10px 0 20px; z-index: 100; }
-  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; padding: 0; }
-  .nav-icon { font-size: 22px; color: #7d8590; transition: color .15s; }
-  .nav-label { font-size: 11px; color: #7d8590; font-weight: 400; transition: color .15s; }
-  .nav-item.active .nav-icon, .nav-item.active .nav-label { color: #00e5a0; }
-  .nav-item.active .nav-label { font-weight: 600; }
+/* ── Notifications ── */
+#notif-overlay .sheet{max-height:70vh;overflow-y:auto}
+.notif-item{background:#0d1117;border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid #1c2128}
+.notif-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.notif-type{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:6px}
+.notif-pay{background:#0f2e1e;color:#00e5a0}
+.notif-req{background:#1a1a3a;color:#7c6ef5}
+.notif-who{font-weight:600;font-size:15px}
+.notif-amount{font-size:20px;font-weight:700;color:#e6edf3;margin-bottom:4px}
+.notif-note{font-size:13px;color:#7d8590;margin-bottom:12px}
+.notif-actions{display:flex;gap:8px}
+.notif-accept{flex:1;padding:10px;background:#00e5a0;border:none;border-radius:10px;font-weight:700;color:#0d1117;font-size:14px}
+.notif-decline{flex:1;padding:10px;background:#1c2128;border:1px solid #2d333b;border-radius:10px;font-weight:600;color:#7d8590;font-size:14px}
 
-  /* Home */
-  #home { padding-bottom: 100px; }
-  .home-header { padding: 56px 24px 24px; background: linear-gradient(180deg, #0f1f30 0%, #0d1117 100%); }
-  .home-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
-  .home-greeting { font-size: 13px; color: #7d8590; }
-  .home-heading { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; margin-top: 4px; }
-  .home-actions { display: flex; gap: 10px; align-items: center; }
-  .icon-btn { background: none; border: none; color: #7d8590; font-size: 20px; }
-  .logout-btn { background: #161b22; border: 1px solid #21262d; color: #7d8590; border-radius: 8px; padding: 6px 12px; font-size: 13px; }
+/* ── Pay sheet ── */
+.tab-row{display:flex;gap:8px;margin-bottom:20px}
+.tab-btn{flex:1;padding:10px;border-radius:10px;border:1.5px solid #21262d;background:#0d1117;color:#7d8590;font-weight:600;font-size:14px;transition:all .15s}
+.tab-btn.active{border-color:#00e5a0;background:#0f2e1e;color:#00e5a0}
+.token-input-row{display:flex;gap:8px}
+.token-input{flex:1;padding:13px 14px;background:#0d1117;border:1.5px solid #21262d;border-radius:12px;color:#e6edf3;font-size:16px;letter-spacing:.1em;font-family:monospace;transition:border-color .2s}
+.token-input:focus{border-color:#00e5a0}
+.token-input::placeholder{font-family:'Inter',sans-serif;letter-spacing:0;font-size:14px;color:#3d4449}
+.find-btn{padding:13px 18px;background:#00e5a0;border:none;border-radius:12px;font-weight:700;color:#0d1117;font-size:15px;white-space:nowrap}
+.found-card{background:#0d1117;border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;border:1px solid #00e5a033;margin-bottom:16px}
+.found-online{margin-left:auto;width:9px;height:9px;border-radius:50%;background:#00e5a0;flex-shrink:0}
+.amount-input{width:100%;padding:14px 16px;background:#0d1117;border:1.5px solid #21262d;border-radius:12px;color:#e6edf3;font-size:18px;font-weight:600;transition:border-color .2s;margin-bottom:4px}
+.amount-input:focus{border-color:#00e5a0}
+.amount-hint{font-size:12px;color:#7d8590;margin-bottom:14px}
+.note-input{width:100%;padding:12px 14px;background:#0d1117;border:1.5px solid #21262d;border-radius:12px;color:#e6edf3;font-size:14px;transition:border-color .2s;margin-bottom:16px}
+.note-input:focus{border-color:#00e5a0}
+.back-link{text-align:center;margin-top:12px;color:#7d8590;font-size:13px;cursor:pointer}
+.upload-zone{border:2px dashed #21262d;border-radius:12px;padding:28px;text-align:center;color:#7d8590;font-size:14px;cursor:pointer;transition:border-color .2s;margin-bottom:16px}
+.upload-zone:hover{border-color:#00e5a0}
+.cam-view{width:100%;aspect-ratio:1;background:#0d1117;border-radius:14px;overflow:hidden;position:relative;margin-bottom:14px;display:none}
+.cam-view video{width:100%;height:100%;object-fit:cover}
+.cam-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.cam-frame{width:200px;height:200px;border:3px solid #00e5a0;border-radius:16px;box-shadow:0 0 0 9999px #000000aa}
 
-  .balance-card { background: #161b22; border-radius: 20px; padding: 24px; border: 1px solid #21262d; margin-bottom: 20px; }
-  .balance-label { font-size: 13px; color: #7d8590; margin-bottom: 6px; }
-  .balance-amount { font-family: 'Space Grotesk', sans-serif; font-size: 44px; font-weight: 700; letter-spacing: -0.03em; }
-  .balance-row { display: flex; gap: 20px; margin-top: 16px; align-items: center; }
-  .balance-divider { width: 1px; height: 36px; background: #21262d; }
-  .balance-item-label { font-size: 12px; color: #7d8590; }
-  .balance-item-val { font-size: 18px; font-weight: 700; margin-top: 2px; }
-  .green { color: #00e5a0; }
-  .red { color: #ff8080; }
+/* ── Request sheet ── */
+.search-input{width:100%;padding:13px 16px;background:#0d1117;border:1.5px solid #21262d;border-radius:12px;color:#e6edf3;font-size:15px;margin-bottom:10px;transition:border-color .2s}
+.search-input:focus{border-color:#00e5a0}
+.search-result{display:flex;align-items:center;gap:12px;padding:12px;background:#0d1117;border-radius:12px;border:1px solid #1c2128;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.search-result:hover{border-color:#00e5a044}
+.search-result.selected{border-color:#00e5a0;background:#0f2e1e}
 
-  .record-btn { width: 100%; padding: 14px; background: #00e5a0; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; color: #0d1117; }
+/* ── History screen ── */
+#history{padding:52px 20px 90px}
+.tx-item{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid #161b22}
+.tx-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.tx-sent{background:#1a0f0f}
+.tx-recv{background:#0f2010}
+.tx-pend{background:#1a1a0f}
+.tx-who{font-weight:600;font-size:14px}
+.tx-meta{font-size:12px;color:#7d8590;margin-top:2px}
+.tx-right{margin-left:auto;text-align:right}
+.tx-amount{font-weight:700;font-size:15px}
+.tx-status{font-size:11px;margin-top:2px}
+.status-pending{color:#f0a030}
+.status-accepted{color:#00e5a0}
+.status-declined{color:#ff5555}
 
-  .section-header { font-size: 12px; color: #7d8590; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
-  .debt-list { padding: 0 24px; }
-  .debt-item { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid #161b22; }
-  .debt-info { flex: 1; }
-  .debt-name { font-weight: 600; font-size: 15px; }
-  .debt-note { font-size: 12px; color: #7d8590; margin-top: 2px; }
-  .debt-amount { text-align: right; }
-  .debt-val { font-weight: 700; font-size: 16px; }
-  .debt-date { font-size: 11px; color: #7d8590; margin-top: 2px; }
+/* ── My QR screen ── */
+#myqr-screen{padding:52px 20px 90px;display:flex;flex-direction:column;align-items:center}
 
-  .empty-state { text-align: center; padding: 48px 24px; color: #7d8590; }
-  .empty-icon { font-size: 40px; margin-bottom: 12px; }
-  .empty-title { font-weight: 600; color: #e6edf3; margin-bottom: 6px; }
-  .empty-text { font-size: 14px; }
+/* ── Profile screen ── */
+#profile-screen{padding:52px 20px 90px}
 
-  /* Pay */
-  #pay { padding: 56px 24px 100px; }
-  .screen-title { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; margin-bottom: 6px; }
-  .screen-sub { color: #7d8590; font-size: 14px; margin-bottom: 32px; }
-  .token-row { display: flex; gap: 10px; }
-  .token-input { flex: 1; padding: 14px 16px; background: #161b22; border: 1.5px solid #21262d; border-radius: 12px; color: #e6edf3; font-size: 16px; letter-spacing: 0.12em; font-family: monospace; transition: border-color .2s; }
-  .token-input:focus { border-color: #00e5a0; }
-  .token-input::placeholder { color: #3d4449; letter-spacing: 0.04em; font-family: 'Inter', sans-serif; }
-  .find-btn { padding: 14px 20px; background: #00e5a0; border: none; border-radius: 12px; font-weight: 700; color: #0d1117; font-size: 15px; }
-  .qr-placeholder { text-align: center; padding: 32px 0; color: #7d8590; font-size: 14px; }
-  .qr-icon { font-size: 32px; margin-bottom: 10px; }
-
-  .found-card { background: #161b22; border-radius: 16px; padding: 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 14px; border: 1px solid #00e5a044; }
-  .found-name { font-weight: 700; font-size: 18px; }
-  .found-phone { font-size: 13px; color: #7d8590; }
-  .found-dot { margin-left: auto; width: 10px; height: 10px; border-radius: 50%; background: #00e5a0; }
-  .back-link { text-align: center; margin-top: 12px; color: #7d8590; font-size: 14px; cursor: pointer; }
-
-  /* QR Screen */
-  #myqr { padding: 56px 24px 100px; display: flex; flex-direction: column; align-items: center; }
-  .qr-card { background: #161b22; border-radius: 24px; padding: 28px; border: 1px solid #21262d; display: flex; flex-direction: column; align-items: center; gap: 20px; }
-  .qr-name { font-weight: 700; font-size: 20px; text-align: center; }
-  .qr-phone { color: #7d8590; font-size: 14px; }
-  .token-display { background: #0d1117; border-radius: 10px; padding: 10px 20px; text-align: center; }
-  .token-display-label { font-size: 12px; color: #7d8590; margin-bottom: 4px; }
-  .token-display-val { font-family: monospace; font-size: 24px; font-weight: 700; letter-spacing: 0.15em; color: #00e5a0; }
-  .qr-hint { margin-top: 24px; font-size: 13px; color: #7d8590; text-align: center; max-width: 280px; line-height: 1.6; }
-
-  /* History */
-  #history { padding: 56px 24px 100px; }
-  .tx-item { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid #161b22; }
-  .tx-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-  .tx-sent { background: #1a0f0f; }
-  .tx-recv { background: #0f2010; }
-  .tx-who { font-weight: 600; font-size: 15px; }
-  .tx-meta { font-size: 12px; color: #7d8590; margin-top: 2px; }
-  .tx-amount { font-weight: 700; }
-
-  /* Add Debt */
-  #adddebt { padding: 56px 24px 40px; }
-  .back-btn { background: none; border: none; color: #7d8590; font-size: 15px; margin-bottom: 20px; padding: 0; }
-  .type-row { display: flex; gap: 8px; margin-bottom: 24px; }
-  .type-btn { flex: 1; padding: 12px; border-radius: 10px; border: 1.5px solid #21262d; background: #161b22; color: #7d8590; font-weight: 600; font-size: 14px; transition: all .15s; }
-  .type-btn.active { border-color: #00e5a0; background: #0f2e1e; color: #00e5a0; }
-
-  /* Avatar */
-  .avatar { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; letter-spacing: 0.02em; flex-shrink: 0; overflow: hidden; }
-  .avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-  /* Toast */
-  #toast { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; z-index: 999; white-space: nowrap; display: none; }
-  #toast.success { background: #0f2e1e; border: 1px solid #00e5a0; color: #00e5a0; }
-  #toast.error { background: #3d1a1a; border: 1px solid #6e2020; color: #ff8080; }
-
-  canvas { display: block; border-radius: 12px; }
-  .mt-section { margin-top: 20px; }
+/* ── Utils ── */
+.green{color:#00e5a0}
+.red{color:#ff8080}
+.purple{color:#7c6ef5}
+.mt8{margin-top:8px}
+.mt12{margin-top:12px}
+.mt16{margin-top:16px}
+.divider{height:1px;background:#161b22;margin:12px 0}
+#toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:10px;font-size:14px;font-weight:500;z-index:9999;display:none;white-space:nowrap;box-shadow:0 4px 20px #0008}
+#toast.s{background:#0f2e1e;border:1px solid #00e5a0;color:#00e5a0}
+#toast.e{background:#2e0f0f;border:1px solid #6e2020;color:#ff8080}
+#toast.i{background:#1a1a2e;border:1px solid #4444aa;color:#9090ff}
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="toast"></div>
+<div id="toast"></div>
 
-  <!-- SPLASH -->
-  <div id="splash" class="screen">
-    <div class="splash-logo">₿</div>
-    <div class="splash-title">Tabify</div>
-    <div class="splash-sub">Track debts. Stay clean.</div>
-    <div class="splash-bar"></div>
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-logo">₿</div>
+  <div class="splash-title">Tabify</div>
+  <div class="splash-sub">Track debts. Stay clean.</div>
+  <div class="splash-dot"></div>
+</div>
+
+<!-- AUTH -->
+<div id="auth" class="screen">
+  <div class="auth-title" id="auth-title">Welcome back</div>
+  <div class="auth-sub" id="auth-sub">Sign in with your phone or username</div>
+
+  <div class="photo-upload" id="signup-photo" style="display:none">
+    <div class="photo-circle" onclick="document.getElementById('photo-file').click()">
+      <img id="photo-preview" src="" style="display:none" alt="">
+      <div id="photo-ph" style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <span style="font-size:26px">📷</span>
+        <span style="font-size:11px;color:#7d8590">Photo</span>
+      </div>
+    </div>
+    <div class="photo-label">Optional profile photo</div>
+    <input type="file" id="photo-file" accept="image/*" style="display:none">
   </div>
 
-  <!-- AUTH -->
-  <div id="auth" class="screen" style="display:none">
-    <div class="auth-title" id="auth-title">Welcome back</div>
-    <div class="auth-sub" id="auth-sub">Sign in with your phone and PIN</div>
-
-    <div class="photo-upload" id="photo-upload-wrap" style="display:none">
-      <div class="photo-circle" onclick="document.getElementById('photo-file').click()">
-        <img id="photo-preview" src="" style="display:none">
-        <div id="photo-placeholder">
-          <div style="font-size:24px">📷</div>
-          <div class="photo-hint">Photo</div>
-        </div>
-      </div>
-      <input type="file" id="photo-file" accept="image/*" style="display:none">
-      <div class="photo-label">Optional profile photo</div>
-    </div>
-
-    <div class="field" id="username-field" style="display:none">
-      <label>Username</label>
-      <input type="text" id="username-input" placeholder="e.g. alex_king">
-    </div>
-
-    <div class="field">
-      <label>Phone number</label>
-      <input type="tel" id="phone-input" placeholder="+1 555 000 0000">
-    </div>
-
-    <div>
-      <div class="pin-label" id="pin-label">Enter your PIN</div>
-      <div class="pin-row">
-        <input class="pin-box" maxlength="1" inputmode="numeric" type="password" id="pin0">
-        <input class="pin-box" maxlength="1" inputmode="numeric" type="password" id="pin1">
-        <input class="pin-box" maxlength="1" inputmode="numeric" type="password" id="pin2">
-        <input class="pin-box" maxlength="1" inputmode="numeric" type="password" id="pin3">
-      </div>
-    </div>
-
-    <button class="btn-primary" id="auth-btn" onclick="doAuth()">Sign in</button>
-    <div class="auth-switch" id="auth-switch">
-      New here? <span onclick="toggleAuthMode()">Create account</span>
-    </div>
+  <div class="field" id="signup-username" style="display:none">
+    <label>Username</label>
+    <input type="text" id="username-input" placeholder="e.g. alex_king" autocomplete="off">
   </div>
 
-  <!-- HOME -->
-  <div id="home" class="screen" style="display:none">
-    <div class="home-header">
-      <div class="home-top">
-        <div>
-          <div class="home-greeting" id="home-greeting">Hey, there 👋</div>
-          <div class="home-heading">Your balance</div>
-        </div>
-        <div class="home-actions">
-          <button class="icon-btn" onclick="loadData()" title="Refresh">↻</button>
-          <button class="logout-btn" onclick="logout()">Out</button>
-        </div>
-      </div>
-      <div class="balance-card">
-        <div class="balance-label">Net position</div>
-        <div class="balance-amount" id="net-balance">$0.00</div>
-        <div class="balance-row">
-          <div>
-            <div class="balance-item-label">Owed to you</div>
-            <div class="balance-item-val green" id="total-owed">$0.00</div>
-          </div>
-          <div class="balance-divider"></div>
-          <div>
-            <div class="balance-item-label">You owe</div>
-            <div class="balance-item-val red" id="total-iowe">$0.00</div>
-          </div>
-        </div>
-      </div>
-      <button class="record-btn" onclick="showScreen('adddebt')">+ Record debt</button>
-    </div>
-    <div class="debt-list" id="debt-list"></div>
+  <div class="field">
+    <label id="id-label">Phone or username</label>
+    <input type="text" id="id-input" placeholder="Phone number or username" autocomplete="off">
   </div>
 
-  <!-- PAY -->
-  <div id="pay" class="screen" style="display:none; padding: 56px 24px 100px;">
-    <div class="screen-title">Send payment</div>
-    <div class="screen-sub">Enter a payment token to find someone</div>
+  <div class="pin-section">
+    <div class="pin-label" id="pin-label">Enter your PIN</div>
+    <div class="pin-display" id="pin-display">
+      <div class="pin-dot" id="pd0">–</div>
+      <div class="pin-dot" id="pd1">–</div>
+      <div class="pin-dot" id="pd2">–</div>
+      <div class="pin-dot" id="pd3">–</div>
+    </div>
+    <div class="numpad" id="numpad"></div>
+  </div>
 
-    <div id="pay-step1">
-      <div class="field">
-        <label>Payment token</label>
-        <div class="token-row">
-          <input class="token-input" id="token-input" placeholder="e.g. A1B2C3D4" maxlength="8"
-            oninput="this.value=this.value.toUpperCase()"
-            onkeydown="if(event.key==='Enter')lookupToken()">
-          <button class="find-btn" onclick="lookupToken()" id="find-btn">Find</button>
+  <button class="btn-primary" id="auth-btn" onclick="doAuth()">Sign in</button>
+  <div class="auth-switch" id="auth-switch">New here? <span onclick="toggleMode()">Create account</span></div>
+</div>
+
+<!-- HOME -->
+<div id="home" class="screen active pb-nav">
+  <div class="home-header">
+    <div class="home-top">
+      <div class="home-avatar" onclick="openQR()">
+        <div id="home-avatar-el"></div>
+      </div>
+      <div class="home-name">
+        <div class="home-greeting">Good day,</div>
+        <div class="home-username" id="home-username">—</div>
+      </div>
+      <div class="home-actions">
+        <button class="icon-btn" onclick="openNotif()" id="notif-btn" title="Notifications">
+          🔔<div class="badge" id="notif-badge" style="display:none">0</div>
+        </button>
+        <button class="icon-btn" onclick="openQR()" title="My QR">▣</button>
+        <button class="icon-btn" onclick="logout()" title="Sign out" style="font-size:15px">⏻</button>
+      </div>
+    </div>
+    <div class="balance-card">
+      <div class="balance-label">Net position</div>
+      <div class="balance-amount" id="net-balance">0 រៀល</div>
+      <div class="balance-row">
+        <div class="balance-cell">
+          <div class="balance-cell-label">Owed to you</div>
+          <div class="balance-cell-val green" id="total-owed">0 រៀល</div>
+        </div>
+        <div class="balance-cell">
+          <div class="balance-cell-label">You owe</div>
+          <div class="balance-cell-val red" id="total-iowe">0 រៀល</div>
         </div>
       </div>
-      <div class="qr-placeholder">
-        <div class="qr-icon">📷</div>
-        QR scanning — use the token above for now
-      </div>
     </div>
-
-    <div id="pay-step2" style="display:none">
-      <div class="found-card" id="found-card"></div>
-      <div class="field">
-        <label>Amount ($)</label>
-        <input type="number" id="pay-amount" placeholder="0.00" style="width:100%;padding:14px 16px;background:#161b22;border:1.5px solid #21262d;border-radius:12px;color:#e6edf3;font-size:15px;" onfocus="this.style.borderColor='#00e5a0'" onblur="this.style.borderColor='#21262d'">
-      </div>
-      <div class="field">
-        <label>Note (optional)</label>
-        <input type="text" id="pay-note" placeholder="What's this for?" style="width:100%;padding:14px 16px;background:#161b22;border:1.5px solid #21262d;border-radius:12px;color:#e6edf3;font-size:15px;" onfocus="this.style.borderColor='#00e5a0'" onblur="this.style.borderColor='#21262d'">
-      </div>
-      <button class="btn-primary" id="pay-btn" onclick="doPay()">Pay</button>
-      <div class="back-link" onclick="resetPay()">← Try different token</div>
+    <div class="action-row">
+      <button class="action-btn pay-btn-main" onclick="openPay()">
+        <span class="ab-icon">↑</span>
+        <span class="ab-label">Pay</span>
+      </button>
+      <button class="action-btn req-btn-main" onclick="openRequest()">
+        <span class="ab-icon">↓</span>
+        <span class="ab-label">Request</span>
+      </button>
     </div>
   </div>
-
-  <!-- MY QR -->
-  <div id="myqr" class="screen" style="display:none">
-    <div style="padding:56px 24px 100px;display:flex;flex-direction:column;align-items:center">
-      <div class="screen-title" style="text-align:center">Your payment code</div>
-      <div class="screen-sub" style="text-align:center">Share this so others can pay you</div>
-      <div class="qr-card">
-        <div id="myqr-avatar"></div>
-        <div style="text-align:center">
-          <div class="qr-name" id="myqr-name"></div>
-          <div class="qr-phone" id="myqr-phone"></div>
-        </div>
-        <canvas id="qr-canvas"></canvas>
-        <div class="token-display">
-          <div class="token-display-label">Token</div>
-          <div class="token-display-val" id="myqr-token"></div>
-        </div>
-      </div>
-      <div class="qr-hint">Others enter your token to send you a payment.</div>
-    </div>
-  </div>
-
-  <!-- HISTORY -->
-  <div id="history" class="screen" style="display:none; padding:56px 24px 100px;">
-    <div class="screen-title" style="margin-bottom:24px">History</div>
-    <div id="tx-list"></div>
-  </div>
-
-  <!-- ADD DEBT -->
-  <div id="adddebt" class="screen" style="display:none">
-    <button class="back-btn" onclick="showScreen('home')">← Back</button>
-    <div class="screen-title">Record a debt</div>
-    <div style="height:28px"></div>
-    <div class="type-row">
-      <button class="type-btn active" id="type-owe-me" onclick="setDebtType('owe_me')">They owe me</button>
-      <button class="type-btn" id="type-i-owe" onclick="setDebtType('i_owe')">I owe them</button>
-    </div>
-    <div class="field">
-      <label>Their name</label>
-      <input type="text" id="debt-name" placeholder="Friend's name">
-    </div>
-    <div class="field">
-      <label>Their phone <span style="color:#4d5560">(optional — links to their account)</span></label>
-      <input type="tel" id="debt-phone" placeholder="+1 555 000 0000">
-    </div>
-    <div class="field">
-      <label>Amount ($)</label>
-      <input type="number" id="debt-amount" placeholder="0.00">
-    </div>
-    <div class="field">
-      <label>Note (optional)</label>
-      <input type="text" id="debt-note" placeholder="What's this for?">
-    </div>
-    <button class="btn-primary" id="save-debt-btn" onclick="saveDebt()">Save debt</button>
-  </div>
-
-  <!-- NAV -->
-  <div id="navbar" style="display:none">
-    <button class="nav-item active" id="nav-home" onclick="showScreen('home')">
-      <div class="nav-icon">⌂</div>
-      <div class="nav-label">Home</div>
-    </button>
-    <button class="nav-item" id="nav-pay" onclick="showScreen('pay')">
-      <div class="nav-icon">↑</div>
-      <div class="nav-label">Pay</div>
-    </button>
-    <button class="nav-item" id="nav-myqr" onclick="showScreen('myqr')">
-      <div class="nav-icon">▣</div>
-      <div class="nav-label">My QR</div>
-    </button>
-    <button class="nav-item" id="nav-history" onclick="showScreen('history')">
-      <div class="nav-icon">↯</div>
-      <div class="nav-label">History</div>
-    </button>
+  <div class="section-wrap">
+    <div id="debt-list-wrap"></div>
   </div>
 </div>
 
+<!-- HISTORY -->
+<div id="history" class="screen">
+  <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:20px">History</div>
+  <div id="tx-list"></div>
+</div>
+
+<!-- MY QR SCREEN (nav) -->
+<div id="myqr-screen" class="screen">
+  <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px;text-align:center">Payment code</div>
+  <div style="color:#7d8590;font-size:14px;margin-bottom:28px;text-align:center">Share so others can pay you</div>
+  <div class="qr-card" style="width:100%">
+    <div id="myqr-avatar"></div>
+    <div style="text-align:center">
+      <div style="font-weight:700;font-size:20px" id="myqr-name"></div>
+      <div style="color:#7d8590;font-size:13px" id="myqr-phone"></div>
+    </div>
+    <canvas id="qr-canvas-main" style="border-radius:12px"></canvas>
+    <div style="background:#161b22;border-radius:12px;padding:12px 24px;text-align:center">
+      <div style="font-size:11px;color:#7d8590;margin-bottom:4px">Your token</div>
+      <div class="qr-token" id="myqr-token-val"></div>
+    </div>
+    <button class="btn-primary" style="width:100%;margin-top:4px" onclick="regenToken(true)">↻ Generate new token</button>
+  </div>
+  <div style="font-size:13px;color:#7d8590;text-align:center;margin-top:20px;line-height:1.6">Token refreshes after each use.<br>Tap above to generate one manually.</div>
+</div>
+
+<!-- NAVBAR -->
+<div id="navbar">
+  <button class="nav-item active" id="nav-home" onclick="gotoScreen('home')">
+    <div class="nav-icon">⌂</div><div class="nav-label">Home</div>
+  </button>
+  <button class="nav-item" id="nav-history" onclick="gotoScreen('history')">
+    <div class="nav-icon">↯</div><div class="nav-label">History</div>
+  </button>
+  <button class="nav-item" id="nav-myqr-screen" onclick="gotoScreen('myqr-screen')">
+    <div class="nav-icon">▣</div><div class="nav-label">My QR</div>
+  </button>
+</div>
+
+<!-- ══ OVERLAYS ══════════════════════════════════════════════════════════════ -->
+
+<!-- QR overlay (from header) -->
+<div class="overlay" id="qr-overlay" onclick="closeOverlay('qr-overlay')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Your payment code</div>
+    <div class="sheet-sub">Tap 'new token' after each payment</div>
+    <div class="qr-card">
+      <canvas id="qr-canvas-ov" style="border-radius:12px"></canvas>
+      <div style="text-align:center">
+        <div class="qr-token" id="qr-token-val"></div>
+        <div class="qr-regen" onclick="regenToken(false)">↻ Generate new token</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notifications overlay -->
+<div class="overlay" id="notif-overlay" onclick="closeOverlay('notif-overlay')">
+  <div class="sheet" onclick="event.stopPropagation()" style="max-height:75vh;overflow-y:auto">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Notifications</div>
+    <div id="notif-list" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- Pay overlay -->
+<div class="overlay" id="pay-overlay" onclick="closeOverlay('pay-overlay')">
+  <div class="sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Pay someone</div>
+    <div class="sheet-sub">Scan, type, or upload their QR code</div>
+
+    <div class="tab-row">
+      <button class="tab-btn active" id="tab-scan" onclick="setPayTab('scan')">📷 Scan</button>
+      <button class="tab-btn" id="tab-type" onclick="setPayTab('type')">⌨ Type</button>
+      <button class="tab-btn" id="tab-upload" onclick="setPayTab('upload')">🖼 Upload</button>
+    </div>
+
+    <!-- Scan -->
+    <div id="pay-scan">
+      <div class="cam-view" id="cam-view">
+        <video id="cam-video" autoplay playsinline muted></video>
+        <div class="cam-overlay"><div class="cam-frame"></div></div>
+      </div>
+      <button class="btn-primary" id="cam-start-btn" onclick="startCamera()">Open camera</button>
+      <div style="font-size:12px;color:#7d8590;text-align:center;margin-top:8px">Point at someone's QR code</div>
+    </div>
+
+    <!-- Type -->
+    <div id="pay-type" style="display:none">
+      <div class="field"><label>Payment token</label>
+        <div class="token-input-row">
+          <input class="token-input" id="type-token-input" placeholder="e.g. A1B2C3" maxlength="8"
+            oninput="this.value=this.value.toUpperCase()"
+            onkeydown="if(event.key==='Enter')lookupPayToken()">
+          <button class="find-btn" onclick="lookupPayToken()">Find</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload -->
+    <div id="pay-upload" style="display:none">
+      <div class="upload-zone" onclick="document.getElementById('qr-file').click()">
+        <div style="font-size:32px;margin-bottom:8px">🖼</div>
+        Tap to upload a QR image
+      </div>
+      <input type="file" id="qr-file" accept="image/*" style="display:none" onchange="handleQRUpload(event)">
+    </div>
+
+    <!-- Found user -->
+    <div id="pay-found" style="display:none">
+      <div class="found-card" id="pay-found-card"></div>
+      <div class="field"><label>Amount (រៀល)</label>
+        <input class="amount-input" type="number" id="pay-amount" placeholder="0">
+        <div class="amount-hint">Enter amount in Khmer Riel</div>
+      </div>
+      <input class="note-input" type="text" id="pay-note" placeholder="Note (optional)">
+      <button class="btn-primary" id="pay-confirm-btn" onclick="submitPay()">Send payment request</button>
+      <div class="back-link" onclick="resetPayFound()">← Back</div>
+    </div>
+  </div>
+</div>
+
+<!-- Request overlay -->
+<div class="overlay" id="req-overlay" onclick="closeOverlay('req-overlay')">
+  <div class="sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Request money</div>
+    <div class="sheet-sub">Search by username or phone number</div>
+
+    <div id="req-search-step">
+      <input class="search-input" type="text" id="req-search" placeholder="Username or phone..." oninput="searchUsers(this.value)">
+      <div id="req-results"></div>
+    </div>
+
+    <div id="req-amount-step" style="display:none">
+      <div class="found-card" id="req-found-card"></div>
+      <div class="field"><label>Amount (រៀល)</label>
+        <input class="amount-input" type="number" id="req-amount" placeholder="0">
+        <div class="amount-hint">Enter amount in Khmer Riel</div>
+      </div>
+      <input class="note-input" type="text" id="req-note" placeholder="What's this for?">
+      <button class="btn-primary" onclick="submitRequest()">Send request</button>
+      <div class="back-link" onclick="resetReqStep()">← Search again</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- #app -->
+
 <script>
-const SUPABASE_URL = "https://zlxkoavtvsktmpgoydji.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpseGtvYXZ0dnNrdG1wZ295ZGppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NzAzMDgsImV4cCI6MjA5ODE0NjMwOH0.5QDeGpq2SZGPw3UNAq7jwdMicQKDKWhkbrbOrmRpl14";
+// ═══════════════════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════════════════
+const SB_URL = "https://zlxkoavtvsktmpgoydji.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpseGtvYXZ0dnNrdG1wZ295ZGppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NzAzMDgsImV4cCI6MjA5ODE0NjMwOH0.5QDeGpq2SZGPw3UNAq7jwdMicQKDKWhkbrbOrmRpl14";
 
-let currentUser = null;
-let currentProfile = null;
-let allDebts = [];
-let allTx = [];
+// ═══════════════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════════════
+let ME = null;          // current profile
+let allDebts = [];      // net ledger rows
+let allTx = [];         // transactions
+let pendingTx = [];     // pending for me to confirm
 let isSignup = false;
-let debtType = 'owe_me';
-let foundProfile = null;
+let pinVal = '';
 let photoBase64 = null;
+let payTab = 'scan';
+let foundPayProfile = null;
+let foundReqProfile = null;
+let camStream = null;
+let searchTimer = null;
 
-// ── API ──────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// API
+// ═══════════════════════════════════════════════════════════════════════════
 async function sb(path, opts = {}) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+  const r = await fetch(`${SB_URL}/rest/v1/${path}`, {
     headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: opts.prefer || "return=representation",
+      apikey: SB_KEY,
+      Authorization: `Bearer ${SB_KEY}`,
+      'Content-Type': 'application/json',
+      Prefer: opts.prefer || 'return=representation',
       ...(opts.headers || {})
     },
     ...opts
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || err.details || "Request failed");
-  }
-  return res.status === 204 ? null : res.json();
+  if (!r.ok) { const e = await r.json().catch(()=>{}); throw new Error(e?.message || e?.details || 'Request failed'); }
+  return r.status === 204 ? null : r.json();
 }
 
-async function sbSignUp(email, password) {
-  const r = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
-    method: "POST",
-    headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
+async function sbRpc(fn, args) {
+  const r = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, {
+    method: 'POST',
+    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(args)
+  });
+  if (!r.ok) { const e = await r.json().catch(()=>{}); throw new Error(e?.message || 'RPC failed'); }
+  return r.status === 204 ? null : r.json();
+}
+
+async function sbAuth(email, pass, signup) {
+  const ep = signup ? '/auth/v1/signup' : '/auth/v1/token?grant_type=password';
+  const r = await fetch(`${SB_URL}${ep}`, {
+    method: 'POST',
+    headers: { apikey: SB_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: pass })
   });
   return r.json();
 }
 
-async function sbSignIn(email, password) {
-  const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-    method: "POST",
-    headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
-  });
-  return r.json();
+// ═══════════════════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════════════════
+function riel(n) {
+  return Number(n||0).toLocaleString('en-US') + ' រៀល';
 }
 
 function genToken() {
-  return Math.random().toString(36).substring(2, 10).toUpperCase();
+  return Math.random().toString(36).substring(2,8).toUpperCase();
 }
 
-// ── Toast ────────────────────────────────────────────────────────────────────
-function toast(msg, type = 'success') {
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toast(msg, type='s') {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.className = type;
   el.style.display = 'block';
-  clearTimeout(window._toastTimer);
-  window._toastTimer = setTimeout(() => el.style.display = 'none', 3200);
+  clearTimeout(window._tt);
+  window._tt = setTimeout(() => el.style.display = 'none', 3200);
 }
 
-// ── Screens ──────────────────────────────────────────────────────────────────
-const appScreens = ['splash','auth','home','pay','myqr','history','adddebt'];
-const navScreens = ['home','pay','myqr','history'];
+function avatarHTML(name, photo, size) {
+  if (photo) return `<img src="${esc(photo)}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #00e5a033" alt="">`;
+  const initials = (name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const pals = [['#1a1f3a','#7c6ef5'],['#0f2027','#00c896'],['#1a0f2e','#e060ff'],['#0f1a1a','#00d4aa'],['#1f1a0f','#f0a030']];
+  const [bg,fg] = pals[(name||'').charCodeAt(0)%pals.length];
+  const fs = Math.round(size*.38);
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${fs}px;flex-shrink:0;border:1.5px solid ${fg}33;letter-spacing:.03em">${initials}</div>`;
+}
 
-function showScreen(id) {
-  appScreens.forEach(s => {
-    const el = document.getElementById(s);
-    if (el) el.style.display = 'none';
-  });
-  const el = document.getElementById(id);
-  if (el) el.style.display = (id === 'myqr') ? 'flex' : 'block';
+// ═══════════════════════════════════════════════════════════════════════════
+// NUMPAD
+// ═══════════════════════════════════════════════════════════════════════════
+function buildNumpad() {
+  const pad = document.getElementById('numpad');
+  const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
+  pad.innerHTML = keys.map(k => {
+    if (k === '') return `<button class="numpad-btn empty" disabled></button>`;
+    const cls = k === '⌫' ? 'numpad-btn del' : 'numpad-btn';
+    return `<button class="${cls}" onclick="numpadPress('${k}')">${k}</button>`;
+  }).join('');
+}
 
-  const nav = document.getElementById('navbar');
-  nav.style.display = navScreens.includes(id) ? 'flex' : 'none';
-
-  document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-  const navBtn = document.getElementById('nav-' + id);
-  if (navBtn) navBtn.classList.add('active');
-
-  if (id === 'myqr') renderMyQR();
-  if (id === 'history') renderHistory();
-  if (id === 'home') renderHome();
-  if (id === 'adddebt') {
-    document.getElementById('debt-name').value = '';
-    document.getElementById('debt-phone').value = '';
-    document.getElementById('debt-amount').value = '';
-    document.getElementById('debt-note').value = '';
-    setDebtType('owe_me');
+function numpadPress(k) {
+  if (k === '⌫') {
+    pinVal = pinVal.slice(0,-1);
+  } else if (pinVal.length < 4) {
+    pinVal += k;
   }
-  window.scrollTo(0, 0);
+  updatePinDisplay();
 }
 
-// ── Auth Mode ────────────────────────────────────────────────────────────────
-function toggleAuthMode() {
+function updatePinDisplay() {
+  [0,1,2,3].forEach(i => {
+    const d = document.getElementById('pd'+i);
+    if (i < pinVal.length) { d.textContent = '●'; d.classList.add('filled'); }
+    else { d.textContent = '–'; d.classList.remove('filled'); }
+  });
+}
+
+function clearPin() { pinVal = ''; updatePinDisplay(); }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// AUTH MODE
+// ═══════════════════════════════════════════════════════════════════════════
+function toggleMode() {
   isSignup = !isSignup;
   document.getElementById('auth-title').textContent = isSignup ? 'Create account' : 'Welcome back';
-  document.getElementById('auth-sub').textContent = isSignup ? 'Set up your Tabify profile' : 'Sign in with your phone and PIN';
+  document.getElementById('auth-sub').textContent = isSignup ? 'Set up your Tabify profile' : 'Sign in with your phone or username';
   document.getElementById('auth-btn').textContent = isSignup ? 'Create account' : 'Sign in';
   document.getElementById('auth-switch').innerHTML = isSignup
-    ? 'Already have an account? <span onclick="toggleAuthMode()">Sign in</span>'
-    : 'New here? <span onclick="toggleAuthMode()">Create account</span>';
+    ? 'Already have an account? <span onclick="toggleMode()">Sign in</span>'
+    : 'New here? <span onclick="toggleMode()">Create account</span>';
+  document.getElementById('id-label').textContent = isSignup ? 'Phone number' : 'Phone or username';
+  document.getElementById('id-input').placeholder = isSignup ? '+855 ...' : 'Phone number or username';
   document.getElementById('pin-label').textContent = isSignup ? 'Create a 4-digit PIN' : 'Enter your PIN';
-  document.getElementById('username-field').style.display = isSignup ? 'block' : 'none';
-  document.getElementById('photo-upload-wrap').style.display = isSignup ? 'flex' : 'none';
+  document.getElementById('signup-photo').style.display = isSignup ? 'flex' : 'none';
+  document.getElementById('signup-username').style.display = isSignup ? 'block' : 'none';
   clearPin();
 }
 
-function clearPin() {
-  [0,1,2,3].forEach(i => {
-    const p = document.getElementById('pin'+i);
-    p.value = '';
-    p.classList.remove('filled');
-  });
-}
-
-function getPin() {
-  return [0,1,2,3].map(i => document.getElementById('pin'+i).value).join('');
-}
-
-// PIN navigation
-[0,1,2,3].forEach(i => {
-  const el = document.getElementById('pin'+i);
-  el.addEventListener('input', () => {
-    if (!/^\d?$/.test(el.value)) { el.value = ''; return; }
-    el.classList.toggle('filled', !!el.value);
-    if (el.value && i < 3) document.getElementById('pin'+(i+1)).focus();
-  });
-  el.addEventListener('keydown', e => {
-    if (e.key === 'Backspace' && !el.value && i > 0) {
-      document.getElementById('pin'+(i-1)).focus();
-    }
-  });
-});
-
 document.getElementById('photo-file').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
+  const f = e.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = ev => {
     photoBase64 = ev.target.result;
-    const preview = document.getElementById('photo-preview');
-    preview.src = photoBase64;
-    preview.style.display = 'block';
-    document.getElementById('photo-placeholder').style.display = 'none';
+    const img = document.getElementById('photo-preview');
+    img.src = photoBase64; img.style.display = 'block';
+    document.getElementById('photo-ph').style.display = 'none';
   };
-  reader.readAsDataURL(file);
+  rd.readAsDataURL(f);
 });
 
-// ── Auth ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════════════════
 async function doAuth() {
+  const idVal = document.getElementById('id-input').value.trim();
+  if (!idVal) return toast('Enter your phone or username', 'e');
+  if (pinVal.length !== 4) return toast('Enter your 4-digit PIN', 'e');
+
   const btn = document.getElementById('auth-btn');
-  const pin = getPin();
-  const phone = document.getElementById('phone-input').value.trim();
-
-  if (!phone) return toast('Phone number required', 'error');
-  if (pin.length !== 4) return toast('Enter a 4-digit PIN', 'error');
-
-  btn.disabled = true;
-  btn.textContent = 'Loading…';
+  btn.disabled = true; btn.textContent = 'Please wait…';
 
   try {
     if (isSignup) {
       const username = document.getElementById('username-input').value.trim();
-      if (!username) { toast('Username required', 'error'); return; }
-      const email = username.toLowerCase().replace(/\s+/g,'_') + '@tabify.app';
-      const password = `tabify_${pin}_${phone.replace(/\D/g,'').slice(-4)}`;
-      const authRes = await sbSignUp(email, password);
-      if (authRes.error) throw new Error(authRes.error.message);
+      if (!username) { toast('Username required', 'e'); return; }
+      const email = username.toLowerCase().replace(/\s+/g,'_') + '@tabify.internal';
+      const pass = 'tbf_' + btoa(pinVal + idVal).slice(0,24);
+      const ar = await sbAuth(email, pass, true);
+      if (ar.error) throw new Error(ar.error.message);
+      const uid = ar.user?.id || crypto.randomUUID();
       const token = genToken();
       const rows = await sb('profiles', {
         method: 'POST',
-        body: JSON.stringify({
-          id: authRes.user?.id || crypto.randomUUID(),
-          username, phone,
-          photo_url: photoBase64 || null,
-          pin_hash: btoa(pin),
-          token, email
-        })
+        body: JSON.stringify({ id: uid, username, phone: idVal, email, photo_url: photoBase64||null, pin_hash: btoa(pinVal), token })
       });
-      const profile = Array.isArray(rows) ? rows[0] : rows;
-      saveSession(authRes.user, profile);
-      toast('Welcome to Tabify!');
+      const p = Array.isArray(rows) ? rows[0] : rows;
+      saveSession(ar.user, p);
+      toast('Welcome to Tabify! 🎉');
     } else {
-      const profiles = await sb(`profiles?phone=eq.${encodeURIComponent(phone)}&limit=1`);
-      if (!profiles?.length) throw new Error('No account with that phone number');
-      const p = profiles[0];
-      if (atob(p.pin_hash) !== pin) throw new Error('Incorrect PIN');
-      const authRes = await sbSignIn(p.email, `tabify_${pin}_${phone.replace(/\D/g,'').slice(-4)}`);
-      saveSession(authRes.user || { id: p.id }, p);
+      // login: match by phone OR username
+      const byPhone = await sb(`profiles?phone=eq.${encodeURIComponent(idVal)}&limit=1`).catch(()=>null);
+      let p = byPhone?.[0];
+      if (!p) {
+        const byUser = await sb(`profiles?username=eq.${encodeURIComponent(idVal)}&limit=1`).catch(()=>null);
+        p = byUser?.[0];
+      }
+      if (!p) throw new Error('No account found');
+      if (atob(p.pin_hash) !== pinVal) throw new Error('Incorrect PIN');
+      saveSession({ id: p.id }, p);
       toast(`Welcome back, ${p.username}!`);
     }
     await loadData();
-    showScreen('home');
+    showAuth(false);
+    gotoScreen('home');
   } catch(e) {
-    toast(e.message || 'Something went wrong', 'error');
+    toast(e.message || 'Something went wrong', 'e');
   } finally {
     btn.disabled = false;
     btn.textContent = isSignup ? 'Create account' : 'Sign in';
@@ -564,318 +671,521 @@ async function doAuth() {
 }
 
 function saveSession(user, profile) {
-  currentUser = user;
-  currentProfile = profile;
+  ME = profile;
   localStorage.setItem('tabify_session', JSON.stringify({ user, profile }));
 }
 
-function logout() {
-  localStorage.removeItem('tabify_session');
-  currentUser = null; currentProfile = null;
-  allDebts = []; allTx = [];
-  showScreen('auth');
-  document.getElementById('navbar').style.display = 'none';
+function showAuth(show) {
+  document.getElementById('auth').style.display = show ? 'block' : 'none';
+  document.getElementById('navbar').style.display = show ? 'none' : 'flex';
 }
 
-// ── Data ─────────────────────────────────────────────────────────────────────
+function logout() {
+  if (camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+  localStorage.removeItem('tabify_session');
+  ME = null; allDebts=[]; allTx=[]; pendingTx=[];
+  showAuth(true);
+  document.getElementById('navbar').style.display='none';
+  document.getElementById('id-input').value='';
+  clearPin();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════════════════════
 async function loadData() {
-  if (!currentProfile) return;
+  if (!ME) return;
   try {
     const [d, t] = await Promise.all([
-      sb(`debts?or=(creditor_id.eq.${currentProfile.id},debtor_id.eq.${currentProfile.id})&order=created_at.desc`),
-      sb(`transactions?or=(from_id.eq.${currentProfile.id},to_id.eq.${currentProfile.id})&order=created_at.desc&limit=30`)
+      sb(`debts?or=(user_a.eq.${ME.id},user_b.eq.${ME.id})&order=updated_at.desc`),
+      sb(`transactions?or=(from_id.eq.${ME.id},to_id.eq.${ME.id})&order=created_at.desc&limit=40`)
     ]);
     allDebts = d || [];
     allTx = t || [];
+    pendingTx = allTx.filter(tx => tx.status === 'pending' && tx.to_id === ME.id);
     renderHome();
     renderHistory();
-  } catch(e) {
-    console.error(e);
-  }
+    renderMyQR();
+    updateNotifBadge();
+  } catch(e) { console.error(e); }
 }
 
-// ── Render Home ───────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// RENDER HOME
+// ═══════════════════════════════════════════════════════════════════════════
 function renderHome() {
-  if (!currentProfile) return;
-  document.getElementById('home-greeting').textContent = `Hey, ${currentProfile.username} 👋`;
+  if (!ME) return;
+  document.getElementById('home-username').textContent = ME.username;
+  document.getElementById('home-avatar-el').innerHTML = avatarHTML(ME.username, ME.photo_url, 46);
 
-  const owedToMe = allDebts.filter(d => d.creditor_id === currentProfile.id && !d.settled);
-  const iOwe = allDebts.filter(d => d.debtor_id === currentProfile.id && !d.settled);
-  const totalOwed = owedToMe.reduce((s,d) => s + Number(d.amount||0), 0);
-  const totalIOwe = iOwe.reduce((s,d) => s + Number(d.amount||0), 0);
+  // net: positive = owed to me, negative = I owe
+  const owedToMe = allDebts.filter(d => d.net_creditor === ME.id && d.net_amount > 0);
+  const iOwe = allDebts.filter(d => d.net_creditor !== ME.id && d.net_amount > 0 && (d.user_a===ME.id||d.user_b===ME.id));
+  const totalOwed = owedToMe.reduce((s,d)=>s+Number(d.net_amount),0);
+  const totalIOwe = iOwe.reduce((s,d)=>s+Number(d.net_amount),0);
   const net = totalOwed - totalIOwe;
 
   const netEl = document.getElementById('net-balance');
-  netEl.textContent = (net >= 0 ? '+' : '') + '$' + Math.abs(net).toFixed(2);
-  netEl.style.color = net >= 0 ? '#00e5a0' : '#ff8080';
+  netEl.textContent = (net>=0?'+':'−') + riel(Math.abs(net));
+  netEl.style.color = net>=0 ? '#00e5a0' : '#ff8080';
+  document.getElementById('total-owed').textContent = riel(totalOwed);
+  document.getElementById('total-iowe').textContent = riel(totalIOwe);
 
-  document.getElementById('total-owed').textContent = '$' + totalOwed.toFixed(2);
-  document.getElementById('total-iowe').textContent = '$' + totalIOwe.toFixed(2);
+  const wrap = document.getElementById('debt-list-wrap');
+  let html = '';
 
-  const list = document.getElementById('debt-list');
-  list.innerHTML = '';
-
-  if (owedToMe.length === 0 && iOwe.length === 0) {
-    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🤝</div><div class="empty-title">All clean!</div><div class="empty-text">No active debts. Tap + Record debt to add one.</div></div>`;
-    return;
+  if (owedToMe.length===0 && iOwe.length===0) {
+    html = `<div class="empty-state"><div class="empty-icon">🤝</div><div class="empty-title">All clean!</div><div class="empty-sub">No active debts.<br>Hit Pay or Request to get started.</div></div>`;
+  } else {
+    if (owedToMe.length) {
+      html += `<div class="section-head">They owe you</div>`;
+      owedToMe.forEach(d => {
+        const other = d.user_a===ME.id ? d.user_b_name||'Someone' : d.user_a_name||'Someone';
+        html += debtRow(other, d.net_amount, true, d.updated_at);
+      });
+    }
+    if (iOwe.length) {
+      html += `<div class="section-head mt12">You owe</div>`;
+      iOwe.forEach(d => {
+        const other = d.user_a===ME.id ? d.user_b_name||'Someone' : d.user_a_name||'Someone';
+        html += debtRow(other, d.net_amount, false, d.updated_at);
+      });
+    }
   }
-
-  if (owedToMe.length > 0) {
-    list.innerHTML += `<div class="section-header" style="margin-top:24px">They owe you</div>`;
-    owedToMe.forEach(d => list.innerHTML += debtItemHTML(d, true));
-  }
-  if (iOwe.length > 0) {
-    list.innerHTML += `<div class="section-header" style="margin-top:24px">You owe</div>`;
-    iOwe.forEach(d => list.innerHTML += debtItemHTML(d, false));
-  }
+  wrap.innerHTML = html;
 }
 
-function debtItemHTML(d, isCreditor) {
-  const name = isCreditor ? (d.debtor_name || 'Unknown') : (d.creditor_name || 'Unknown');
-  const note = d.note || (isCreditor ? 'Owes you' : 'You owe');
-  const color = isCreditor ? '#00e5a0' : '#ff8080';
-  const prefix = isCreditor ? '+' : '-';
-  const date = new Date(d.created_at).toLocaleDateString();
-  return `
-    <div class="debt-item">
-      ${avatarHTML(name, null, 42)}
-      <div class="debt-info">
-        <div class="debt-name">${esc(name)}</div>
-        <div class="debt-note">${esc(note)}</div>
+function debtRow(name, amount, isOwed, date) {
+  const color = isOwed ? '#00e5a0' : '#ff8080';
+  const prefix = isOwed ? '+' : '−';
+  const dt = new Date(date).toLocaleDateString();
+  return `<div class="debt-item">
+    ${avatarHTML(name,null,44)}
+    <div class="debt-info">
+      <div class="debt-name">${esc(name)}</div>
+      <div class="debt-meta">${isOwed?'Owes you':'You owe'} · ${dt}</div>
+    </div>
+    <div class="debt-right">
+      <div class="debt-val" style="color:${color}">${prefix}${riel(amount)}</div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RENDER HISTORY
+// ═══════════════════════════════════════════════════════════════════════════
+function renderHistory() {
+  const el = document.getElementById('tx-list');
+  if (!el) return;
+  if (!allTx.length) { el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-sub">No transactions yet</div></div>'; return; }
+  el.innerHTML = allTx.map(tx => {
+    const sent = tx.from_id === ME?.id;
+    const isPay = tx.type === 'pay';
+    const who = sent ? (tx.to_name||'?') : (tx.from_name||'?');
+    const label = isPay ? (sent?`Paid ${who}`:`Payment from ${who}`) : (sent?`Requested from ${who}`:`Request from ${who}`);
+    const color = tx.status==='pending' ? '#f0a030' : (sent ? '#ff8080' : '#00e5a0');
+    const prefix = sent ? '−' : '+';
+    const iconBg = tx.status==='pending' ? 'tx-pend' : (sent?'tx-sent':'tx-recv');
+    const icon = tx.status==='pending' ? '⏳' : (isPay?(sent?'↑':'↓'):(sent?'📤':'📥'));
+    const dt = new Date(tx.created_at).toLocaleDateString();
+    return `<div class="tx-item">
+      <div class="tx-icon ${iconBg}">${icon}</div>
+      <div>
+        <div class="tx-who">${esc(label)}</div>
+        <div class="tx-meta">${esc(tx.note||'')} · ${dt}</div>
       </div>
-      <div class="debt-amount">
-        <div class="debt-val" style="color:${color}">${prefix}$${Number(d.amount||0).toFixed(2)}</div>
-        <div class="debt-date">${date}</div>
+      <div class="tx-right">
+        <div class="tx-amount" style="color:${color}">${prefix}${riel(tx.amount)}</div>
+        <div class="tx-status status-${tx.status}">${tx.status}</div>
       </div>
     </div>`;
-}
-
-function renderHistory() {
-  const list = document.getElementById('tx-list');
-  if (!list) return;
-  if (allTx.length === 0) {
-    list.innerHTML = '<div class="empty-state" style="padding:40px 0"><div class="empty-icon">📋</div><div class="empty-text">No activity yet</div></div>';
-    return;
-  }
-  list.innerHTML = allTx.map(t => {
-    const sent = t.from_id === currentProfile?.id;
-    const who = sent ? (t.to_name || 'someone') : (t.from_name || 'someone');
-    const label = sent ? `To ${who}` : `From ${who}`;
-    const color = sent ? '#ff8080' : '#00e5a0';
-    const prefix = sent ? '-' : '+';
-    const date = new Date(t.created_at).toLocaleDateString();
-    return `
-      <div class="tx-item">
-        <div class="tx-icon ${sent ? 'tx-sent' : 'tx-recv'}">${sent ? '↑' : '↓'}</div>
-        <div style="flex:1">
-          <div class="tx-who">${esc(label)}</div>
-          <div class="tx-meta">${esc(t.note || 'Payment')} · ${date}</div>
-        </div>
-        <div class="tx-amount" style="color:${color}">${prefix}$${Number(t.amount||0).toFixed(2)}</div>
-      </div>`;
   }).join('');
 }
 
-// ── Pay ───────────────────────────────────────────────────────────────────────
-async function lookupToken() {
-  const token = document.getElementById('token-input').value.trim().toUpperCase();
-  if (!token) return;
-  const btn = document.getElementById('find-btn');
-  btn.disabled = true; btn.textContent = '…';
+// ═══════════════════════════════════════════════════════════════════════════
+// MY QR SCREEN
+// ═══════════════════════════════════════════════════════════════════════════
+function renderMyQR() {
+  if (!ME) return;
+  document.getElementById('myqr-name').textContent = ME.username;
+  document.getElementById('myqr-phone').textContent = ME.phone||'';
+  document.getElementById('myqr-avatar').innerHTML = avatarHTML(ME.username, ME.photo_url, 64);
+  document.getElementById('myqr-token-val').textContent = ME.token||'';
+  drawQR('qr-canvas-main', ME.token||'', 200);
+  // overlay
+  document.getElementById('qr-token-val').textContent = ME.token||'';
+  drawQR('qr-canvas-ov', ME.token||'', 180);
+}
+
+async function regenToken(fromScreen) {
+  if (!ME) return;
+  const newTok = genToken();
   try {
-    const profiles = await sb(`profiles?token=eq.${token}&limit=1`);
-    if (!profiles?.length) { toast('Token not found', 'error'); return; }
-    foundProfile = profiles[0];
-    document.getElementById('found-card').innerHTML = `
-      ${avatarHTML(foundProfile.username, foundProfile.photo_url, 50)}
-      <div>
-        <div class="found-name">${esc(foundProfile.username)}</div>
-        <div class="found-phone">${esc(foundProfile.phone || '')}</div>
-      </div>
-      <div class="found-dot"></div>`;
-    document.getElementById('pay-btn').textContent = `Pay ${foundProfile.username}`;
-    document.getElementById('pay-step1').style.display = 'none';
-    document.getElementById('pay-step2').style.display = 'block';
-  } catch(e) {
-    toast('Lookup failed', 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Find';
+    await sb(`profiles?id=eq.${ME.id}`, { method:'PATCH', body:JSON.stringify({token:newTok}) });
+    ME.token = newTok;
+    const sess = JSON.parse(localStorage.getItem('tabify_session')||'{}');
+    if (sess.profile) { sess.profile.token = newTok; localStorage.setItem('tabify_session', JSON.stringify(sess)); }
+    renderMyQR();
+    toast('New token generated!');
+  } catch(e) { toast('Failed to regenerate token','e'); }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// QR DRAW
+// ═══════════════════════════════════════════════════════════════════════════
+function drawQR(canvasId, value, size) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas||!value) return;
+  const ctx = canvas.getContext('2d');
+  const cells = 21, cell = Math.floor(size/cells);
+  canvas.width = cells*cell; canvas.height = cells*cell;
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  const seed = value.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+  const rng=(x,y)=>{const n=Math.sin((x*127+y*311+seed*17)*9301+49297)*233280;return(n-Math.floor(n))>.5};
+  const corners=[[0,0],[0,cells-7],[cells-7,0]];
+  ctx.fillStyle='#00e5a0';
+  for(let y=0;y<cells;y++)for(let x=0;x<cells;x++){
+    let on=false;
+    const c=corners.find(([cx,cy])=>x>=cx&&x<cx+7&&y>=cy&&y<cy+7);
+    if(c){const lx=x-c[0],ly=y-c[1];on=lx===0||lx===6||ly===0||ly===6||(lx>=2&&lx<=4&&ly>=2&&ly<=4);}
+    else on=rng(x,y);
+    if(on)ctx.fillRect(x*cell,y*cell,cell-1,cell-1);
   }
 }
 
-function resetPay() {
-  document.getElementById('pay-step2').style.display = 'none';
-  document.getElementById('pay-step1').style.display = 'block';
-  document.getElementById('token-input').value = '';
+// ═══════════════════════════════════════════════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════════════════════════════════════════════
+function updateNotifBadge() {
+  const badge = document.getElementById('notif-badge');
+  if (pendingTx.length > 0) { badge.textContent = pendingTx.length; badge.style.display='flex'; }
+  else badge.style.display='none';
+}
+
+function openNotif() {
+  const list = document.getElementById('notif-list');
+  if (!pendingTx.length) {
+    list.innerHTML='<div class="empty-state" style="padding:24px 0"><div class="empty-icon">✅</div><div class="empty-sub">No pending notifications</div></div>';
+  } else {
+    list.innerHTML = pendingTx.map(tx => {
+      const isPay = tx.type==='pay';
+      const label = isPay ? 'PAYMENT' : 'REQUEST';
+      const cls = isPay ? 'notif-pay' : 'notif-req';
+      const who = tx.from_name||'Someone';
+      const desc = isPay ? `${who} wants to pay you` : `${who} is requesting money from you`;
+      return `<div class="notif-item">
+        <div class="notif-top">
+          <span class="notif-type ${cls}">${label}</span>
+          <span style="font-size:13px;color:#7d8590">${new Date(tx.created_at).toLocaleDateString()}</span>
+        </div>
+        <div class="notif-who">${esc(who)}</div>
+        <div class="notif-amount">${riel(tx.amount)}</div>
+        ${tx.note?`<div class="notif-note">"${esc(tx.note)}"</div>`:''}
+        <div class="notif-actions">
+          <button class="notif-accept" onclick="resolveTransaction('${tx.id}','accepted')">Accept</button>
+          <button class="notif-decline" onclick="resolveTransaction('${tx.id}','declined')">Decline</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  openOverlay('notif-overlay');
+}
+
+async function resolveTransaction(txId, status) {
+  try {
+    const tx = allTx.find(t=>t.id===txId);
+    if (!tx) return;
+    await sb(`transactions?id=eq.${txId}`, {
+      method:'PATCH',
+      body:JSON.stringify({status, resolved_at:new Date().toISOString()})
+    });
+    if (status==='accepted') {
+      // apply_payment: payer=from_id, payee=to_id (for pay) or reverse (for request)
+      const payer = tx.type==='pay' ? tx.from_id : tx.to_id;
+      const payee = tx.type==='pay' ? tx.to_id : tx.from_id;
+      // also need to fetch names for the debt row
+      await updateDebtLedger(payer, payee, tx.amount, tx.from_name, tx.to_name);
+      toast('Payment accepted! Ledger updated ✅');
+    } else {
+      toast('Transaction declined');
+    }
+    closeOverlay('notif-overlay');
+    await loadData();
+  } catch(e) { toast(e.message||'Failed','e'); }
+}
+
+async function updateDebtLedger(payerId, payeeId, amount, fromName, toName) {
+  // canonical pair
+  const a = payerId < payeeId ? payerId : payeeId;
+  const b = payerId < payeeId ? payeeId : payerId;
+  const existing = await sb(`debts?user_a=eq.${a}&user_b=eq.${b}&limit=1`);
+  const row = existing?.[0];
+
+  let newNet, newCreditor;
+  if (!row) {
+    // payee is owed
+    newNet = amount; newCreditor = payeeId;
+    await sb('debts', {
+      method:'POST',
+      body:JSON.stringify({
+        user_a:a, user_b:b, net_amount:newNet, net_creditor:newCreditor,
+        user_a_name: a===payerId?fromName:toName,
+        user_b_name: b===payerId?fromName:toName
+      })
+    });
+    return;
+  }
+
+  if (row.net_creditor === payeeId) {
+    newNet = Number(row.net_amount) - amount;
+  } else {
+    newNet = Number(row.net_amount) + amount;
+  }
+
+  if (newNet > 0) {
+    newCreditor = row.net_creditor===payeeId ? payeeId : payerId;
+  } else if (newNet < 0) {
+    newNet = Math.abs(newNet);
+    newCreditor = row.net_creditor===payeeId ? payerId : payeeId;
+  } else {
+    newNet = 0; newCreditor = null;
+  }
+
+  await sb(`debts?user_a=eq.${a}&user_b=eq.${b}`, {
+    method:'PATCH',
+    body:JSON.stringify({net_amount:newNet, net_creditor:newCreditor, updated_at:new Date().toISOString()})
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PAY FLOW
+// ═══════════════════════════════════════════════════════════════════════════
+function openPay() { resetPayFound(); setPayTab('scan'); openOverlay('pay-overlay'); }
+
+function setPayTab(tab) {
+  payTab = tab;
+  ['scan','type','upload'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('pay-'+t).style.display = t===tab ? 'block' : 'none';
+  });
+  document.getElementById('pay-found').style.display = 'none';
+  if (tab !== 'scan' && camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+  if (tab === 'scan') {
+    document.getElementById('cam-view').style.display = 'none';
+    document.getElementById('cam-start-btn').style.display = 'block';
+  }
+}
+
+async function startCamera() {
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
+    const vid = document.getElementById('cam-video');
+    vid.srcObject = camStream;
+    document.getElementById('cam-view').style.display = 'block';
+    document.getElementById('cam-start-btn').style.display = 'none';
+    toast('Camera ready — point at QR code', 'i');
+    // Simple polling: check every second for a token typed in a hidden field
+    // (Real QR decode needs a library; here we show a manual confirm button)
+    document.getElementById('cam-view').onclick = () => {
+      const tok = prompt('Enter the token shown on the QR code:');
+      if (tok) resolvePayToken(tok.trim().toUpperCase());
+    };
+  } catch(e) {
+    toast('Camera access denied — use Type or Upload instead', 'e');
+    setPayTab('type');
+  }
+}
+
+async function lookupPayToken() {
+  const tok = document.getElementById('type-token-input').value.trim().toUpperCase();
+  if (!tok) return;
+  await resolvePayToken(tok);
+}
+
+async function resolvePayToken(tok) {
+  try {
+    const rows = await sb(`profiles?token=eq.${encodeURIComponent(tok)}&limit=1`);
+    if (!rows?.length) { toast('Token not found — check and retry', 'e'); return; }
+    foundPayProfile = rows[0];
+    document.getElementById('pay-found-card').innerHTML = `
+      ${avatarHTML(foundPayProfile.username, foundPayProfile.photo_url, 48)}
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:17px">${esc(foundPayProfile.username)}</div>
+        <div style="font-size:13px;color:#7d8590">${esc(foundPayProfile.phone||'')}</div>
+      </div>
+      <div class="found-online"></div>`;
+    document.getElementById('pay-confirm-btn').textContent = `Send to ${foundPayProfile.username}`;
+    ['pay-scan','pay-type','pay-upload'].forEach(id => document.getElementById(id).style.display='none');
+    document.getElementById('pay-found').style.display = 'block';
+  } catch(e) { toast(e.message||'Lookup failed','e'); }
+}
+
+async function handleQRUpload(e) {
+  const f = e.target.files[0]; if (!f) return;
+  // We can't decode QR without a library, so we prompt manually
+  toast('QR image received — enter the token below', 'i');
+  setPayTab('type');
+  document.getElementById('type-token-input').focus();
+}
+
+function resetPayFound() {
+  foundPayProfile = null;
+  document.getElementById('pay-found').style.display = 'none';
   document.getElementById('pay-amount').value = '';
   document.getElementById('pay-note').value = '';
-  foundProfile = null;
+  setPayTab('scan');
+  if (camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
 }
 
-async function doPay() {
+async function submitPay() {
   const amount = parseFloat(document.getElementById('pay-amount').value);
   const note = document.getElementById('pay-note').value.trim();
-  if (!amount || isNaN(amount)) return toast('Enter a valid amount', 'error');
-  const btn = document.getElementById('pay-btn');
-  btn.disabled = true; btn.textContent = 'Sending…';
+  if (!amount||isNaN(amount)||amount<=0) return toast('Enter a valid amount','e');
+  if (!foundPayProfile) return;
+  const btn = document.getElementById('pay-confirm-btn');
+  btn.disabled=true; btn.textContent='Sending…';
   try {
-    const debtToSettle = allDebts.find(d =>
-      d.creditor_id === foundProfile.id &&
-      d.debtor_id === currentProfile.id &&
-      !d.settled &&
-      Math.abs(d.amount - amount) < 0.01
-    );
-    if (debtToSettle) {
-      await sb(`debts?id=eq.${debtToSettle.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ settled: true, settled_at: new Date().toISOString() })
-      });
-    }
     await sb('transactions', {
-      method: 'POST',
-      body: JSON.stringify({
-        from_id: currentProfile.id,
-        to_id: foundProfile.id,
-        from_name: currentProfile.username,
-        to_name: foundProfile.username,
-        amount, note
+      method:'POST',
+      body:JSON.stringify({
+        type:'pay', from_id:ME.id, to_id:foundPayProfile.id,
+        from_name:ME.username, to_name:foundPayProfile.username,
+        amount, note, status:'pending'
       })
     });
+    // Regen token after use
+    await regenToken(false);
+    closeOverlay('pay-overlay');
     await loadData();
-    toast(`Paid ${foundProfile.username} $${amount.toFixed(2)}`);
-    resetPay();
-    showScreen('home');
-  } catch(e) {
-    toast(e.message || 'Payment failed', 'error');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = foundProfile ? `Pay ${foundProfile.username}` : 'Pay';
-  }
+    toast(`Payment request sent to ${foundPayProfile.username} ✅`);
+  } catch(e) { toast(e.message||'Failed','e'); }
+  finally { btn.disabled=false; btn.textContent=`Send to ${foundPayProfile?.username||''}`; }
 }
 
-// ── My QR ─────────────────────────────────────────────────────────────────────
-function renderMyQR() {
-  if (!currentProfile) return;
-  document.getElementById('myqr-name').textContent = currentProfile.username;
-  document.getElementById('myqr-phone').textContent = currentProfile.phone || '';
-  document.getElementById('myqr-token').textContent = currentProfile.token;
-  document.getElementById('myqr-avatar').innerHTML = avatarHTML(currentProfile.username, currentProfile.photo_url, 64);
-  drawQR(currentProfile.token);
+// ═══════════════════════════════════════════════════════════════════════════
+// REQUEST FLOW
+// ═══════════════════════════════════════════════════════════════════════════
+function openRequest() { resetReqStep(); openOverlay('req-overlay'); }
+
+async function searchUsers(q) {
+  clearTimeout(searchTimer);
+  const res = document.getElementById('req-results');
+  if (!q||q.length<2) { res.innerHTML=''; return; }
+  searchTimer = setTimeout(async () => {
+    try {
+      const byPhone = await sb(`profiles?phone=ilike.*${encodeURIComponent(q)}*&limit=5`).catch(()=>[]);
+      const byUser  = await sb(`profiles?username=ilike.*${encodeURIComponent(q)}*&limit=5`).catch(()=>[]);
+      const merged = [...(byPhone||[]),...(byUser||[])];
+      const unique = merged.filter((p,i,a)=>p.id!==ME.id&&a.findIndex(x=>x.id===p.id)===i).slice(0,5);
+      if (!unique.length) { res.innerHTML='<div style="color:#7d8590;font-size:14px;padding:8px 0">No users found</div>'; return; }
+      res.innerHTML = unique.map(p=>`
+        <div class="search-result" onclick="selectReqUser('${p.id}','${esc(p.username)}','${esc(p.phone||'')}','${esc(p.photo_url||'')}')">
+          ${avatarHTML(p.username, p.photo_url||null, 40)}
+          <div>
+            <div style="font-weight:600;font-size:15px">${esc(p.username)}</div>
+            <div style="font-size:12px;color:#7d8590">${esc(p.phone||'')}</div>
+          </div>
+        </div>`).join('');
+    } catch {}
+  }, 350);
 }
 
-function drawQR(value) {
-  const canvas = document.getElementById('qr-canvas');
-  const ctx = canvas.getContext('2d');
-  const cells = 21;
-  const size = 200;
-  const cell = Math.floor(size / cells);
-  canvas.width = cells * cell;
-  canvas.height = cells * cell;
-  ctx.fillStyle = '#0d1117';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  const seed = value.split('').reduce((a,c) => a + c.charCodeAt(0), 0);
-  const rng = (x, y) => {
-    const n = Math.sin((x * 127 + y * 311 + seed * 17) * 9301 + 49297) * 233280;
-    return (n - Math.floor(n)) > 0.5;
-  };
-  const corners = [[0,0],[0,cells-7],[cells-7,0]];
-  const inCorner = (x,y) => corners.some(([cx,cy]) => x>=cx && x<cx+7 && y>=cy && y<cy+7);
-
-  ctx.fillStyle = '#00e5a0';
-  for (let y = 0; y < cells; y++) {
-    for (let x = 0; x < cells; x++) {
-      let on = false;
-      const c = corners.find(([cx,cy]) => x>=cx && x<cx+7 && y>=cy && y<cy+7);
-      if (c) {
-        const lx = x-c[0], ly = y-c[1];
-        on = lx===0 || lx===6 || ly===0 || ly===6 || (lx>=2&&lx<=4&&ly>=2&&ly<=4);
-      } else {
-        on = rng(x, y);
-      }
-      if (on) ctx.fillRect(x*cell, y*cell, cell-1, cell-1);
-    }
-  }
+function selectReqUser(id, username, phone, photo) {
+  foundReqProfile = { id, username, phone, photo_url:photo||null };
+  document.getElementById('req-found-card').innerHTML = `
+    ${avatarHTML(username,photo||null,48)}
+    <div style="flex:1">
+      <div style="font-weight:700;font-size:17px">${esc(username)}</div>
+      <div style="font-size:13px;color:#7d8590">${esc(phone)}</div>
+    </div>`;
+  document.getElementById('req-search-step').style.display='none';
+  document.getElementById('req-amount-step').style.display='block';
 }
 
-// ── Add Debt ─────────────────────────────────────────────────────────────────
-function setDebtType(t) {
-  debtType = t;
-  document.getElementById('type-owe-me').className = 'type-btn' + (t==='owe_me' ? ' active' : '');
-  document.getElementById('type-i-owe').className = 'type-btn' + (t==='i_owe' ? ' active' : '');
+function resetReqStep() {
+  foundReqProfile=null;
+  document.getElementById('req-search').value='';
+  document.getElementById('req-results').innerHTML='';
+  document.getElementById('req-search-step').style.display='block';
+  document.getElementById('req-amount-step').style.display='none';
+  document.getElementById('req-amount').value='';
+  document.getElementById('req-note').value='';
 }
 
-async function saveDebt() {
-  const name = document.getElementById('debt-name').value.trim();
-  const phone = document.getElementById('debt-phone').value.trim();
-  const amount = parseFloat(document.getElementById('debt-amount').value);
-  const note = document.getElementById('debt-note').value.trim();
-  if (!name) return toast('Name required', 'error');
-  if (!amount || isNaN(amount)) return toast('Amount required', 'error');
-
-  const btn = document.getElementById('save-debt-btn');
-  btn.disabled = true; btn.textContent = 'Saving…';
+async function submitRequest() {
+  const amount = parseFloat(document.getElementById('req-amount').value);
+  const note = document.getElementById('req-note').value.trim();
+  if (!amount||isNaN(amount)||amount<=0) return toast('Enter a valid amount','e');
+  if (!foundReqProfile) return;
   try {
-    const isCreditor = debtType === 'owe_me';
-    let otherProfile = null;
-    if (phone) {
-      const res = await sb(`profiles?phone=eq.${encodeURIComponent(phone)}&limit=1`);
-      if (res?.length) otherProfile = res[0];
-    }
-    await sb('debts', {
-      method: 'POST',
-      body: JSON.stringify({
-        creditor_id: isCreditor ? currentProfile.id : (otherProfile?.id || null),
-        debtor_id: isCreditor ? (otherProfile?.id || null) : currentProfile.id,
-        creditor_name: isCreditor ? currentProfile.username : name,
-        debtor_name: isCreditor ? name : currentProfile.username,
-        amount, note, settled: false
+    await sb('transactions', {
+      method:'POST',
+      body:JSON.stringify({
+        type:'request', from_id:ME.id, to_id:foundReqProfile.id,
+        from_name:ME.username, to_name:foundReqProfile.username,
+        amount, note, status:'pending'
       })
     });
+    closeOverlay('req-overlay');
     await loadData();
-    toast('Debt recorded!');
-    showScreen('home');
-  } catch(e) {
-    toast(e.message || 'Failed to save', 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Save debt';
-  }
+    toast(`Request sent to ${foundReqProfile.username} ✅`);
+  } catch(e) { toast(e.message||'Failed','e'); }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function avatarHTML(name, photo, size) {
-  if (photo) {
-    return `<img src="${esc(photo)}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="${esc(name)}">`;
-  }
-  const initials = (name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  const palettes = [['#1a1f3a','#7c6ef5'],['#0f2027','#00c896'],['#1a0f2e','#e060ff'],['#0f1a1a','#00d4aa']];
-  const [bg,fg] = palettes[(name||'').charCodeAt(0) % palettes.length];
-  const fs = Math.round(size * 0.36);
-  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${fs}px;flex-shrink:0;border:1.5px solid ${fg}33;letter-spacing:0.02em">${initials}</div>`;
+// ═══════════════════════════════════════════════════════════════════════════
+// OVERLAY + SCREEN NAV
+// ═══════════════════════════════════════════════════════════════════════════
+function openOverlay(id) { document.getElementById(id).classList.add('open'); }
+function closeOverlay(id) {
+  document.getElementById(id).classList.remove('open');
+  if (id==='pay-overlay' && camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+}
+function openQR() { renderMyQR(); openOverlay('qr-overlay'); }
+
+const navScreens = ['home','history','myqr-screen'];
+function gotoScreen(id) {
+  navScreens.forEach(s => {
+    const el=document.getElementById(s);
+    if(el){el.style.display='none';el.classList.remove('active');}
+  });
+  const el=document.getElementById(id);
+  if(el){el.style.display='block';el.classList.add('active');}
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  const nb=document.getElementById('nav-'+id);
+  if(nb) nb.classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='myqr-screen') renderMyQR();
+  if(id==='history') renderHistory();
 }
 
-function esc(str) {
-  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+// ═══════════════════════════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════════════════════════
+buildNumpad();
 
-// ── Boot ──────────────────────────────────────────────────────────────────────
-(function init() {
+(function boot() {
   const saved = localStorage.getItem('tabify_session');
   if (saved) {
     try {
-      const { user, profile } = JSON.parse(saved);
-      currentUser = user;
-      currentProfile = profile;
-      document.getElementById('splash').style.display = 'none';
-      loadData().then(() => showScreen('home'));
+      const { profile } = JSON.parse(saved);
+      ME = profile;
+      document.getElementById('splash').style.display='none';
+      showAuth(false);
+      gotoScreen('home');
+      loadData();
       return;
     } catch {}
   }
-  setTimeout(() => {
-    document.getElementById('splash').style.display = 'none';
-    showScreen('auth');
-  }, 1800);
+  setTimeout(()=>{
+    document.getElementById('splash').style.display='none';
+    showAuth(true);
+    document.getElementById('auth').style.display='block';
+  }, 1600);
 })();
+
+// Poll for new notifications every 30s
+setInterval(()=>{ if(ME) loadData(); }, 30000);
 </script>
 </body>
 </html>
