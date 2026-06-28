@@ -209,145 +209,145 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 </head>
 <body>
 <div id="app">
-<div id="toast"></div>
+  <div id="toast"></div>
 
-<!-- SPLASH -->
-<div id="splash">
-  <div class="splash-logo">₿</div>
-  <div class="splash-title">Tabify</div>
-  <div class="splash-sub">Track debts. Stay clean.</div>
-  <div class="splash-dot"></div>
-</div>
+  <!-- SPLASH -->
+  <div id="splash">
+    <div class="splash-logo">₿</div>
+    <div class="splash-title">Tabify</div>
+    <div class="splash-sub">Track debts. Stay clean.</div>
+    <div class="splash-dot"></div>
+  </div>
 
-<!-- AUTH -->
-<div id="auth" class="screen">
-  <div class="auth-title" id="auth-title">Welcome back</div>
-  <div class="auth-sub" id="auth-sub">Sign in with your phone or username</div>
+  <!-- AUTH -->
+  <div id="auth" class="screen">
+    <div class="auth-title" id="auth-title">Welcome back</div>
+    <div class="auth-sub" id="auth-sub">Sign in with your phone or username</div>
 
-  <div class="photo-upload" id="signup-photo" style="display:none">
-    <div class="photo-circle" onclick="document.getElementById('photo-file').click()">
-      <img id="photo-preview" src="" style="display:none" alt="">
-      <div id="photo-ph" style="display:flex;flex-direction:column;align-items:center;gap:3px">
-        <span style="font-size:26px">📷</span>
-        <span style="font-size:11px;color:#7d8590">Photo</span>
+    <div class="photo-upload" id="signup-photo" style="display:none">
+      <div class="photo-circle" onclick="document.getElementById('photo-file').click()">
+        <img id="photo-preview" src="" style="display:none" alt="">
+        <div id="photo-ph" style="display:flex;flex-direction:column;align-items:center;gap:3px">
+          <span style="font-size:26px">📷</span>
+          <span style="font-size:11px;color:#7d8590">Photo</span>
+        </div>
       </div>
+      <div class="photo-label">Optional profile photo</div>
+      <input type="file" id="photo-file" accept="image/*" style="display:none">
     </div>
-    <div class="photo-label">Optional profile photo</div>
-    <input type="file" id="photo-file" accept="image/*" style="display:none">
-  </div>
 
-  <div class="field" id="signup-username" style="display:none">
-    <label>Username</label>
-    <input type="text" id="username-input" placeholder="e.g. alex_king" autocomplete="off">
-  </div>
-
-  <div class="field">
-    <label id="id-label">Phone or username</label>
-    <input type="text" id="id-input" placeholder="Phone number or username" autocomplete="off">
-  </div>
-
-  <div class="pin-section">
-    <div class="pin-label" id="pin-label">Enter your PIN</div>
-    <div class="pin-display" id="pin-display">
-      <div class="pin-dot" id="pd0">–</div>
-      <div class="pin-dot" id="pd1">–</div>
-      <div class="pin-dot" id="pd2">–</div>
-      <div class="pin-dot" id="pd3">–</div>
+    <div class="field" id="signup-username" style="display:none">
+      <label>Username</label>
+      <input type="text" id="username-input" placeholder="e.g. alex_king" autocomplete="off">
     </div>
-    <div class="numpad" id="numpad"></div>
+
+    <div class="field">
+      <label id="id-label">Phone or username</label>
+      <input type="text" id="id-input" placeholder="Phone number or username" autocomplete="off">
+    </div>
+
+    <div class="pin-section">
+      <div class="pin-label" id="pin-label">Enter your PIN</div>
+      <div class="pin-display" id="pin-display">
+        <div class="pin-dot" id="pd0">–</div>
+        <div class="pin-dot" id="pd1">–</div>
+        <div class="pin-dot" id="pd2">–</div>
+        <div class="pin-dot" id="pd3">–</div>
+      </div>
+      <div class="numpad" id="numpad"></div>
+    </div>
+
+    <button class="btn-primary" id="auth-btn" onclick="doAuth()">Sign in</button>
+    <div class="auth-switch" id="auth-switch">New here? <span onclick="toggleMode()">Create account</span></div>
   </div>
 
-  <button class="btn-primary" id="auth-btn" onclick="doAuth()">Sign in</button>
-  <div class="auth-switch" id="auth-switch">New here? <span onclick="toggleMode()">Create account</span></div>
-</div>
-
-<!-- HOME -->
-<div id="home" class="screen active pb-nav">
-  <div class="home-header">
-    <div class="home-top">
-      <div class="home-avatar" onclick="openQR()">
-        <div id="home-avatar-el"></div>
+  <!-- HOME -->
+  <div id="home" class="screen active pb-nav">
+    <div class="home-header">
+      <div class="home-top">
+        <div class="home-avatar" onclick="openQR()">
+          <div id="home-avatar-el"></div>
+        </div>
+        <div class="home-name">
+          <div class="home-greeting">Good day,</div>
+          <div class="home-username" id="home-username">—</div>
+        </div>
+        <div class="home-actions">
+          <button class="icon-btn" onclick="openNotif()" id="notif-btn" title="Notifications">
+            🔔<div class="badge" id="notif-badge" style="display:none">0</div>
+          </button>
+          <button class="icon-btn" onclick="openQR()" title="My QR">▣</button>
+          <button class="icon-btn" onclick="logout()" title="Sign out" style="font-size:15px">⏻</button>
+        </div>
       </div>
-      <div class="home-name">
-        <div class="home-greeting">Good day,</div>
-        <div class="home-username" id="home-username">—</div>
+      <div class="balance-card">
+        <div class="balance-label">Net position</div>
+        <div class="balance-amount" id="net-balance">0 រៀល</div>
+        <div class="balance-row">
+          <div class="balance-cell">
+            <div class="balance-cell-label">Owed to you</div>
+            <div class="balance-cell-val green" id="total-owed">0 រៀល</div>
+          </div>
+          <div class="balance-cell">
+            <div class="balance-cell-label">You owe</div>
+            <div class="balance-cell-val red" id="total-iowe">0 រៀល</div>
+          </div>
+        </div>
       </div>
-      <div class="home-actions">
-        <button class="icon-btn" onclick="openNotif()" id="notif-btn" title="Notifications">
-          🔔<div class="badge" id="notif-badge" style="display:none">0</div>
+      <div class="action-row">
+        <button class="action-btn pay-btn-main" onclick="openPay()">
+          <span class="ab-icon">↑</span>
+          <span class="ab-label">Pay</span>
         </button>
-        <button class="icon-btn" onclick="openQR()" title="My QR">▣</button>
-        <button class="icon-btn" onclick="logout()" title="Sign out" style="font-size:15px">⏻</button>
+        <button class="action-btn req-btn-main" onclick="openRequest()">
+          <span class="ab-icon">💸</span>
+          <span class="ab-label">Owe</span>
+        </button>
       </div>
     </div>
-    <div class="balance-card">
-      <div class="balance-label">Net position</div>
-      <div class="balance-amount" id="net-balance">0 រៀល</div>
-      <div class="balance-row">
-        <div class="balance-cell">
-          <div class="balance-cell-label">Owed to you</div>
-          <div class="balance-cell-val green" id="total-owed">0 រៀល</div>
-        </div>
-        <div class="balance-cell">
-          <div class="balance-cell-label">You owe</div>
-          <div class="balance-cell-val red" id="total-iowe">0 រៀល</div>
-        </div>
+    <div class="section-wrap">
+      <div id="debt-list-wrap"></div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="history" class="screen">
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:20px">History</div>
+    <div id="tx-list"></div>
+  </div>
+
+  <!-- MY QR SCREEN (nav) -->
+  <div id="myqr-screen" class="screen">
+    <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px;text-align:center">Payment code</div>
+    <div style="color:#7d8590;font-size:14px;margin-bottom:28px;text-align:center">Share so others can pay you</div>
+    <div class="qr-card" style="width:100%">
+      <div id="myqr-avatar"></div>
+      <div style="text-align:center">
+        <div style="font-weight:700;font-size:20px" id="myqr-name"></div>
+        <div style="color:#7d8590;font-size:13px" id="myqr-phone"></div>
       </div>
+      <div id="qr-canvas-main"></div>
+      <div style="background:#161b22;border-radius:12px;padding:12px 24px;text-align:center">
+        <div style="font-size:11px;color:#7d8590;margin-bottom:4px">Your token</div>
+        <div class="qr-token" id="myqr-token-val"></div>
+      </div>
+      <button class="btn-primary" style="width:100%;margin-top:4px" onclick="regenToken(true)">↻ Generate new token</button>
     </div>
-    <div class="action-row">
-      <button class="action-btn pay-btn-main" onclick="openPay()">
-        <span class="ab-icon">↑</span>
-        <span class="ab-label">Pay</span>
-      </button>
-      <button class="action-btn req-btn-main" onclick="openRequest()">
-        <span class="ab-icon">↓</span>
-        <span class="ab-label">Request</span>
-      </button>
-    </div>
+    <div style="font-size:13px;color:#7d8590;text-align:center;margin-top:20px;line-height:1.6">Token refreshes after each use.<br>Tap above to generate one manually.</div>
   </div>
-  <div class="section-wrap">
-    <div id="debt-list-wrap"></div>
+
+  <!-- NAVBAR -->
+  <div id="navbar" style="display:none">
+    <button class="nav-item active" id="nav-home" onclick="gotoScreen('home')">
+      <div class="nav-icon">⌂</div><div class="nav-label">Home</div>
+    </button>
+    <button class="nav-item" id="nav-history" onclick="gotoScreen('history')">
+      <div class="nav-icon">↯</div><div class="nav-label">History</div>
+    </button>
+    <button class="nav-item" id="nav-myqr-screen" onclick="gotoScreen('myqr-screen')">
+      <div class="nav-icon">▣</div><div class="nav-label">My QR</div>
+    </button>
   </div>
-</div>
-
-<!-- HISTORY -->
-<div id="history" class="screen">
-  <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:20px">History</div>
-  <div id="tx-list"></div>
-</div>
-
-<!-- MY QR SCREEN (nav) -->
-<div id="myqr-screen" class="screen">
-  <div style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px;text-align:center">Payment code</div>
-  <div style="color:#7d8590;font-size:14px;margin-bottom:28px;text-align:center">Share so others can pay you</div>
-  <div class="qr-card" style="width:100%">
-    <div id="myqr-avatar"></div>
-    <div style="text-align:center">
-      <div style="font-weight:700;font-size:20px" id="myqr-name"></div>
-      <div style="color:#7d8590;font-size:13px" id="myqr-phone"></div>
-    </div>
-    <canvas id="qr-canvas-main" style="border-radius:12px"></canvas>
-    <div style="background:#161b22;border-radius:12px;padding:12px 24px;text-align:center">
-      <div style="font-size:11px;color:#7d8590;margin-bottom:4px">Your token</div>
-      <div class="qr-token" id="myqr-token-val"></div>
-    </div>
-    <button class="btn-primary" style="width:100%;margin-top:4px" onclick="regenToken(true)">↻ Generate new token</button>
-  </div>
-  <div style="font-size:13px;color:#7d8590;text-align:center;margin-top:20px;line-height:1.6">Token refreshes after each use.<br>Tap above to generate one manually.</div>
-</div>
-
-<!-- NAVBAR -->
-<div id="navbar">
-  <button class="nav-item active" id="nav-home" onclick="gotoScreen('home')">
-    <div class="nav-icon">⌂</div><div class="nav-label">Home</div>
-  </button>
-  <button class="nav-item" id="nav-history" onclick="gotoScreen('history')">
-    <div class="nav-icon">↯</div><div class="nav-label">History</div>
-  </button>
-  <button class="nav-item" id="nav-myqr-screen" onclick="gotoScreen('myqr-screen')">
-    <div class="nav-icon">▣</div><div class="nav-label">My QR</div>
-  </button>
-</div>
 
 <!-- ══ OVERLAYS ══════════════════════════════════════════════════════════════ -->
 
@@ -358,7 +358,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
     <div class="sheet-title">Your payment code</div>
     <div class="sheet-sub">Tap 'new token' after each payment</div>
     <div class="qr-card">
-      <canvas id="qr-canvas-ov" style="border-radius:12px"></canvas>
+      <div id="qr-canvas-ov"></div>
       <div style="text-align:center">
         <div class="qr-token" id="qr-token-val"></div>
         <div class="qr-regen" onclick="regenToken(false)">↻ Generate new token</div>
@@ -438,8 +438,8 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 <div class="overlay" id="req-overlay" onclick="closeOverlay('req-overlay')">
   <div class="sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">Request money</div>
-    <div class="sheet-sub">Search by username or phone number</div>
+    <div class="sheet-title">Record a Debt</div>
+    <div class="sheet-sub">Find the person you owe money to</div>
 
     <div id="req-search-step">
       <input class="search-input" type="text" id="req-search" placeholder="Username or phone..." oninput="searchUsers(this.value)">
@@ -453,7 +453,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
         <div class="amount-hint">Enter amount in Khmer Riel</div>
       </div>
       <input class="note-input" type="text" id="req-note" placeholder="What's this for?">
-      <button class="btn-primary" onclick="submitRequest()">Send request</button>
+      <button class="btn-primary" onclick="submitRequest()">Record Debt</button>
       <div class="back-link" onclick="resetReqStep()">← Search again</div>
     </div>
   </div>
@@ -461,6 +461,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 </div><!-- #app -->
 
@@ -475,8 +476,8 @@ const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 // STATE
 // ═══════════════════════════════════════════════════════════════════════════
 let ME = null;          // current profile
-let allDebts = [];      // net ledger rows
-let allTx = [];         // transactions
+let allDebts = [];
+let allTx = [];
 let pendingTx = [];     // pending for me to confirm
 let isSignup = false;
 let pinVal = '';
@@ -486,6 +487,8 @@ let foundPayProfile = null;
 let foundReqProfile = null;
 let camStream = null;
 let searchTimer = null;
+let sbClient = null;
+let realtimeChannel = null;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // API
@@ -495,8 +498,8 @@ async function sb(path, opts = {}) {
     headers: {
       apikey: SB_KEY,
       Authorization: `Bearer ${SB_KEY}`,
-      'Content-Type': 'application/json',
-      Prefer: opts.prefer || 'return=representation',
+      "Content-Type": "application/json",
+      Prefer: opts.prefer || "return=representation",
       ...(opts.headers || {})
     },
     ...opts
@@ -507,7 +510,7 @@ async function sb(path, opts = {}) {
 
 async function sbRpc(fn, args) {
   const r = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, {
-    method: 'POST',
+    method: "POST",
     headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(args)
   });
@@ -518,7 +521,7 @@ async function sbRpc(fn, args) {
 async function sbAuth(email, pass, signup) {
   const ep = signup ? '/auth/v1/signup' : '/auth/v1/token?grant_type=password';
   const r = await fetch(`${SB_URL}${ep}`, {
-    method: 'POST',
+    method: "POST",
     headers: { apikey: SB_KEY, 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password: pass })
   });
@@ -630,7 +633,8 @@ async function doAuth() {
   if (pinVal.length !== 4) return toast('Enter your 4-digit PIN', 'e');
 
   const btn = document.getElementById('auth-btn');
-  btn.disabled = true; btn.textContent = 'Please wait…';
+  btn.disabled = true;
+  btn.textContent = 'Please wait…';
 
   try {
     if (isSignup) {
@@ -665,6 +669,7 @@ async function doAuth() {
     await loadData();
     showAuth(false);
     gotoScreen('home');
+    setupRealtime();
   } catch(e) {
     toast(e.message || 'Something went wrong', 'e');
   } finally {
@@ -686,9 +691,10 @@ function showAuth(show) {
 function logout() {
   if (camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
   localStorage.removeItem('tabify_session');
+  teardownRealtime();
   ME = null; allDebts=[]; allTx=[]; pendingTx=[];
   showAuth(true);
-  document.getElementById('navbar').style.display='none';
+  document.getElementById('navbar').style.display = 'none';
   document.getElementById('id-input').value='';
   clearPin();
 }
@@ -710,7 +716,9 @@ async function loadData() {
     renderHistory();
     renderMyQR();
     updateNotifBadge();
-  } catch(e) { console.error(e); }
+  } catch(e) {
+    console.error(e);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -738,7 +746,7 @@ function renderHome() {
   let html = '';
 
   if (owedToMe.length===0 && iOwe.length===0) {
-    html = `<div class="empty-state"><div class="empty-icon">🤝</div><div class="empty-title">All clean!</div><div class="empty-sub">No active debts.<br>Hit Pay or Request to get started.</div></div>`;
+    html = `<div class="empty-state"><div class="empty-icon">🤝</div><div class="empty-title">All clean!</div><div class="empty-sub">No active debts.<br>Hit Pay or Owe to get started.</div></div>`;
   } else {
     if (owedToMe.length) {
       html += `<div class="section-head">They owe you</div>`;
@@ -787,11 +795,16 @@ function renderHistory() {
     const sent = tx.from_id === ME?.id;
     const isPay = tx.type === 'pay';
     const who = sent ? (tx.to_name||'?') : (tx.from_name||'?');
-    const label = isPay ? (sent?`Paid ${who}`:`Payment from ${who}`) : (sent?`Requested from ${who}`:`Request from ${who}`);
+    let label;
+    if (isPay) {
+      label = sent ? `Paid ${who}` : `Payment from ${who}`;
+    } else { // 'request' now means recording a debt you owe
+      label = sent ? `You owe ${who}` : `${who} recorded a debt to you`;
+    }
     const color = tx.status==='pending' ? '#f0a030' : (sent ? '#ff8080' : '#00e5a0');
     const prefix = sent ? '−' : '+';
     const iconBg = tx.status==='pending' ? 'tx-pend' : (sent?'tx-sent':'tx-recv');
-    const icon = tx.status==='pending' ? '⏳' : (isPay?(sent?'↑':'↓'):(sent?'📤':'📥'));
+    const icon = tx.status==='pending' ? '⏳' : (sent ? '↑' : '↓');
     const dt = new Date(tx.created_at).toLocaleDateString();
     return `<div class="tx-item">
       <div class="tx-icon ${iconBg}">${icon}</div>
@@ -817,9 +830,6 @@ function renderMyQR() {
   document.getElementById('myqr-avatar').innerHTML = avatarHTML(ME.username, ME.photo_url, 64);
   document.getElementById('myqr-token-val').textContent = ME.token||'';
   drawQR('qr-canvas-main', ME.token||'', 200);
-  // overlay
-  document.getElementById('qr-token-val').textContent = ME.token||'';
-  drawQR('qr-canvas-ov', ME.token||'', 180);
 }
 
 async function regenToken(fromScreen) {
@@ -830,7 +840,15 @@ async function regenToken(fromScreen) {
     ME.token = newTok;
     const sess = JSON.parse(localStorage.getItem('tabify_session')||'{}');
     if (sess.profile) { sess.profile.token = newTok; localStorage.setItem('tabify_session', JSON.stringify(sess)); }
-    renderMyQR();
+    if (fromScreen) {
+      renderMyQR();
+    } else {
+      // Also update the overlay if it's open
+      if (document.getElementById('qr-overlay').classList.contains('open')) {
+          document.getElementById('qr-token-val').textContent = ME.token || '';
+          drawQR('qr-canvas-ov', ME.token || '', 180);
+      }
+    }
     toast('New token generated!');
   } catch(e) { toast('Failed to regenerate token','e'); }
 }
@@ -838,18 +856,24 @@ async function regenToken(fromScreen) {
 // ═══════════════════════════════════════════════════════════════════════════
 // QR DRAW
 // ═══════════════════════════════════════════════════════════════════════════
-function drawQR(canvasId, value, size) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas || !value) return;
-    QRCode.toCanvas(canvas, value, {
+function drawQR(containerId, value, size) {
+    const container = document.getElementById(containerId);
+    if (!container || !value) return;
+    QRCode.toString(value, {
+        type: 'svg',
         width: size,
         margin: 1,
         color: {
-            dark: '#00e5a0', // Green dots
-            light: '#0d1117'  // Dark background
+            dark: '#00e5a0', // QR code dots
+            light: '#0000'   // Transparent background
         }
-    }, function (error) {
-        if (error) console.error('QR Error:', error);
+    }, function (error, svgString) {
+        if (error) {
+            console.error('QR SVG Error:', error);
+            container.innerHTML = '';
+        } else {
+            container.innerHTML = svgString;
+        }
     });
 }
 
@@ -867,18 +891,18 @@ function openNotif() {
   if (!pendingTx.length) {
     list.innerHTML='<div class="empty-state" style="padding:24px 0"><div class="empty-icon">✅</div><div class="empty-sub">No pending notifications</div></div>';
   } else {
-    list.innerHTML = pendingTx.map(tx => {
+    list.innerHTML = pendingTx.map(tx => { //
       const isPay = tx.type==='pay';
-      const label = isPay ? 'PAYMENT' : 'REQUEST';
+      const label = isPay ? 'PAYMENT' : 'DEBT';
       const cls = isPay ? 'notif-pay' : 'notif-req';
       const who = tx.from_name||'Someone';
-      const desc = isPay ? `${who} wants to pay you` : `${who} is requesting money from you`;
+      const desc = isPay ? `${who} wants to pay you` : `${who} recorded a debt to you`;
       return `<div class="notif-item">
         <div class="notif-top">
           <span class="notif-type ${cls}">${label}</span>
           <span style="font-size:13px;color:#7d8590">${new Date(tx.created_at).toLocaleDateString()}</span>
         </div>
-        <div class="notif-who">${esc(who)}</div>
+        <div class="notif-who">${desc}</div>
         <div class="notif-amount">${riel(tx.amount)}</div>
         ${tx.note?`<div class="notif-note">"${esc(tx.note)}"</div>`:''}
         <div class="notif-actions">
@@ -900,14 +924,17 @@ async function resolveTransaction(txId, status) {
       body:JSON.stringify({status, resolved_at:new Date().toISOString()})
     });
     if (status==='accepted') {
-      const payer = tx.type==='pay' ? tx.from_id : tx.to_id;
-      const payee = tx.type==='pay' ? tx.to_id : tx.from_id;
+      const isPay = tx.type === 'pay';
+      // For a 'pay' tx, the initiator (from_id) is the payer.
+      // For an 'Owe' (request) tx, the initiator is borrowing, so the other party (to_id) is the payer.
+      const payer = isPay ? tx.from_id : tx.to_id;
+      const payee = isPay ? tx.to_id : tx.from_id;
       await sbRpc('apply_payment', {
         payer_id: payer,
         payee_id: payee,
         amt: tx.amount
       });
-      toast('Payment accepted! Ledger updated ✅');
+      toast('Transaction accepted! Ledger updated ✅');
     } else {
       toast('Transaction declined');
     }
@@ -921,7 +948,11 @@ async function resolveTransaction(txId, status) {
 // ═══════════════════════════════════════════════════════════════════════════
 // PAY FLOW
 // ═══════════════════════════════════════════════════════════════════════════
-function openPay() { resetPayFound(); setPayTab('scan'); openOverlay('pay-overlay'); }
+function openPay() {
+  resetPayFound();
+  openOverlay('pay-overlay');
+  setPayTab('scan');
+}
 
 function setPayTab(tab) {
   payTab = tab;
@@ -932,8 +963,7 @@ function setPayTab(tab) {
   document.getElementById('pay-found').style.display = 'none';
   if (tab !== 'scan' && camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
   if (tab === 'scan') {
-    document.getElementById('cam-view').style.display = 'none';
-    document.getElementById('cam-start-btn').style.display = 'block';
+    startCamera();
   }
 }
 
@@ -958,6 +988,7 @@ function scanQR() {
 }
 
 async function startCamera() {
+  if (camStream) return;
   try {
     camStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
     const vid = document.getElementById('cam-video');
@@ -1058,7 +1089,7 @@ async function submitPay() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// REQUEST FLOW
+// REQUEST FLOW (now "Owe")
 // ═══════════════════════════════════════════════════════════════════════════
 function openRequest() { resetReqStep(); openOverlay('req-overlay'); }
 
@@ -1123,8 +1154,39 @@ async function submitRequest() {
     });
     closeOverlay('req-overlay');
     await loadData();
-    toast(`Request sent to ${foundReqProfile.username} ✅`);
+    toast(`Debt to ${foundReqProfile.username} recorded ✅`);
   } catch(e) { toast(e.message||'Failed','e'); }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// REALTIME NOTIFICATIONS
+// ═══════════════════════════════════════════════════════════════════════════
+function setupRealtime() {
+  if (!ME || sbClient) return;
+
+  const { createClient } = supabase;
+  sbClient = createClient(SB_URL, SB_KEY);
+
+  realtimeChannel = sbClient
+    .channel('public:transactions')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'transactions' }, payload => {
+      if (payload.new && payload.new.to_id === ME.id) {
+        const type = payload.new.type === 'pay' ? 'payment' : 'debt record';
+        toast(`New ${type} from ${payload.new.from_name}!`, 'i');
+        loadData().then(() => {
+          openNotif();
+        });
+      }
+    })
+    .subscribe();
+}
+
+function teardownRealtime() {
+    if (realtimeChannel) {
+        sbClient.removeChannel(realtimeChannel);
+        realtimeChannel = null;
+        sbClient = null;
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1135,7 +1197,14 @@ function closeOverlay(id) {
   document.getElementById(id).classList.remove('open');
   if (id==='pay-overlay' && camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
 }
-function openQR() { renderMyQR(); openOverlay('qr-overlay'); }
+function openQR() {
+  openOverlay('qr-overlay');
+  setTimeout(() => {
+    if (!ME) return;
+    document.getElementById('qr-token-val').textContent = ME.token || '';
+    drawQR('qr-canvas-ov', ME.token || '', 180);
+  }, 50);
+}
 
 const navScreens = ['home','history','myqr-screen'];
 function gotoScreen(id) {
@@ -1149,8 +1218,9 @@ function gotoScreen(id) {
   const nb=document.getElementById('nav-'+id);
   if(nb) nb.classList.add('active');
   window.scrollTo(0,0);
-  if(id==='myqr-screen') renderMyQR();
-  if(id==='history') renderHistory();
+  if (id === 'home') renderHome();
+  if (id === 'history') renderHistory();
+  if (id === 'myqr-screen') renderMyQR();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1168,6 +1238,7 @@ buildNumpad();
       showAuth(false);
       gotoScreen('home');
       loadData();
+      setupRealtime();
       return;
     } catch {}
   }
@@ -1177,9 +1248,6 @@ buildNumpad();
     document.getElementById('auth').style.display='block';
   }, 1600);
 })();
-
-// Poll for new notifications every 30s
-setInterval(()=>{ if(ME) loadData(); }, 30000);
 </script>
 </body>
 </html>
