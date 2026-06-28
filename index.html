@@ -708,7 +708,6 @@ async function loadData() {
     pendingTx = allTx.filter(tx => tx.status === 'pending' && tx.to_id === ME.id);
     renderHome();
     renderHistory();
-    renderMyQR();
     updateNotifBadge();
   } catch(e) { console.error(e); }
 }
@@ -822,9 +821,6 @@ function renderMyQR() {
   document.getElementById('myqr-avatar').innerHTML = avatarHTML(ME.username, ME.photo_url, 64);
   document.getElementById('myqr-token-val').textContent = ME.token||'';
   drawQR('qr-canvas-main', ME.token||'', 200);
-  // overlay
-  document.getElementById('qr-token-val').textContent = ME.token||'';
-  drawQR('qr-canvas-ov', ME.token||'', 180);
 }
 
 async function regenToken(fromScreen) {
@@ -836,6 +832,11 @@ async function regenToken(fromScreen) {
     const sess = JSON.parse(localStorage.getItem('tabify_session')||'{}');
     if (sess.profile) { sess.profile.token = newTok; localStorage.setItem('tabify_session', JSON.stringify(sess)); }
     renderMyQR();
+    // Also update the overlay if it's open
+    if (document.getElementById('qr-overlay').classList.contains('open')) {
+        document.getElementById('qr-token-val').textContent = ME.token || '';
+        drawQR('qr-canvas-ov', ME.token || '', 180);
+    }
     toast('New token generated!');
   } catch(e) { toast('Failed to regenerate token','e'); }
 }
@@ -1141,7 +1142,14 @@ function closeOverlay(id) {
   document.getElementById(id).classList.remove('open');
   if (id==='pay-overlay' && camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
 }
-function openQR() { renderMyQR(); openOverlay('qr-overlay'); }
+function openQR() {
+  openOverlay('qr-overlay');
+  setTimeout(() => {
+    if (!ME) return;
+    document.getElementById('qr-token-val').textContent = ME.token || '';
+    drawQR('qr-canvas-ov', ME.token || '', 180);
+  }, 50);
+}
 
 const navScreens = ['home','history','myqr-screen'];
 function gotoScreen(id) {
@@ -1155,8 +1163,9 @@ function gotoScreen(id) {
   const nb=document.getElementById('nav-'+id);
   if(nb) nb.classList.add('active');
   window.scrollTo(0,0);
-  if(id==='myqr-screen') renderMyQR();
-  if(id==='history') renderHistory();
+  if (id === 'home') renderHome();
+  if (id === 'history') renderHistory();
+  if (id === 'myqr-screen') renderMyQR();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
