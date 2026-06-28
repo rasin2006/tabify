@@ -300,8 +300,8 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
         <span class="ab-label">Pay</span>
       </button>
       <button class="action-btn req-btn-main" onclick="openRequest()">
-        <span class="ab-icon">↓</span>
-        <span class="ab-label">Request</span>
+        <span class="ab-icon">💸</span>
+        <span class="ab-label">Owe</span>
       </button>
     </div>
   </div>
@@ -438,8 +438,8 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 <div class="overlay" id="req-overlay" onclick="closeOverlay('req-overlay')">
   <div class="sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">Request money</div>
-    <div class="sheet-sub">Search by username or phone number</div>
+    <div class="sheet-title">Record a Debt</div>
+    <div class="sheet-sub">Find the person you owe money to</div>
 
     <div id="req-search-step">
       <input class="search-input" type="text" id="req-search" placeholder="Username or phone..." oninput="searchUsers(this.value)">
@@ -453,7 +453,7 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
         <div class="amount-hint">Enter amount in Khmer Riel</div>
       </div>
       <input class="note-input" type="text" id="req-note" placeholder="What's this for?">
-      <button class="btn-primary" onclick="submitRequest()">Send request</button>
+      <button class="btn-primary" onclick="submitRequest()">Record Debt</button>
       <div class="back-link" onclick="resetReqStep()">← Search again</div>
     </div>
   </div>
@@ -787,11 +787,16 @@ function renderHistory() {
     const sent = tx.from_id === ME?.id;
     const isPay = tx.type === 'pay';
     const who = sent ? (tx.to_name||'?') : (tx.from_name||'?');
-    const label = isPay ? (sent?`Paid ${who}`:`Payment from ${who}`) : (sent?`Requested from ${who}`:`Request from ${who}`);
+    let label;
+    if (isPay) {
+      label = sent ? `Paid ${who}` : `Payment from ${who}`;
+    } else { // 'request' now means recording a debt you owe
+      label = sent ? `You owe ${who}` : `${who} owes you`;
+    }
     const color = tx.status==='pending' ? '#f0a030' : (sent ? '#ff8080' : '#00e5a0');
     const prefix = sent ? '−' : '+';
     const iconBg = tx.status==='pending' ? 'tx-pend' : (sent?'tx-sent':'tx-recv');
-    const icon = tx.status==='pending' ? '⏳' : (isPay?(sent?'↑':'↓'):(sent?'📤':'📥'));
+    const icon = tx.status==='pending' ? '⏳' : (sent ? '↑' : '↓');
     const dt = new Date(tx.created_at).toLocaleDateString();
     return `<div class="tx-item">
       <div class="tx-icon ${iconBg}">${icon}</div>
@@ -867,18 +872,18 @@ function openNotif() {
   if (!pendingTx.length) {
     list.innerHTML='<div class="empty-state" style="padding:24px 0"><div class="empty-icon">✅</div><div class="empty-sub">No pending notifications</div></div>';
   } else {
-    list.innerHTML = pendingTx.map(tx => {
+    list.innerHTML = pendingTx.map(tx => { //
       const isPay = tx.type==='pay';
-      const label = isPay ? 'PAYMENT' : 'REQUEST';
+      const label = isPay ? 'PAYMENT' : 'DEBT';
       const cls = isPay ? 'notif-pay' : 'notif-req';
       const who = tx.from_name||'Someone';
-      const desc = isPay ? `${who} wants to pay you` : `${who} is requesting money from you`;
+      const desc = isPay ? `${who} wants to pay you` : `${who} recorded a debt to you`;
       return `<div class="notif-item">
         <div class="notif-top">
           <span class="notif-type ${cls}">${label}</span>
           <span style="font-size:13px;color:#7d8590">${new Date(tx.created_at).toLocaleDateString()}</span>
         </div>
-        <div class="notif-who">${esc(who)}</div>
+        <div class="notif-who">${desc}</div>
         <div class="notif-amount">${riel(tx.amount)}</div>
         ${tx.note?`<div class="notif-note">"${esc(tx.note)}"</div>`:''}
         <div class="notif-actions">
@@ -900,14 +905,15 @@ async function resolveTransaction(txId, status) {
       body:JSON.stringify({status, resolved_at:new Date().toISOString()})
     });
     if (status==='accepted') {
-      const payer = tx.type==='pay' ? tx.from_id : tx.to_id;
-      const payee = tx.type==='pay' ? tx.to_id : tx.from_id;
+      // For both 'pay' and 'request' (owe), from_id is the payer/debtor.
+      const payer = tx.from_id;
+      const payee = tx.to_id;
       await sbRpc('apply_payment', {
         payer_id: payer,
         payee_id: payee,
         amt: tx.amount
       });
-      toast('Payment accepted! Ledger updated ✅');
+      toast('Transaction accepted! Ledger updated ✅');
     } else {
       toast('Transaction declined');
     }
@@ -1123,7 +1129,7 @@ async function submitRequest() {
     });
     closeOverlay('req-overlay');
     await loadData();
-    toast(`Request sent to ${foundReqProfile.username} ✅`);
+    toast(`Debt to ${foundReqProfile.username} recorded ✅`);
   } catch(e) { toast(e.message||'Failed','e'); }
 }
 
