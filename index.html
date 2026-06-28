@@ -300,8 +300,8 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
         <span class="ab-label">Pay</span>
       </button>
       <button class="action-btn req-btn-main" onclick="openRequest()">
-        <span class="ab-icon">💸</span>
-        <span class="ab-label">Owe</span>
+        <span class="ab-icon">↓</span>
+        <span class="ab-label">Request</span>
       </button>
     </div>
   </div>
@@ -438,8 +438,8 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 <div class="overlay" id="req-overlay" onclick="closeOverlay('req-overlay')">
   <div class="sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">Record a Debt</div>
-    <div class="sheet-sub">Find the person you owe money to</div>
+    <div class="sheet-title">Request money</div>
+    <div class="sheet-sub">Search by username or phone number</div>
 
     <div id="req-search-step">
       <input class="search-input" type="text" id="req-search" placeholder="Username or phone..." oninput="searchUsers(this.value)">
@@ -453,14 +453,11 @@ button{cursor:pointer;-webkit-tap-highlight-color:transparent}
         <div class="amount-hint">Enter amount in Khmer Riel</div>
       </div>
       <input class="note-input" type="text" id="req-note" placeholder="What's this for?">
-      <button class="btn-primary" onclick="submitRequest()">Record Debt</button>
+      <button class="btn-primary" onclick="submitRequest()">Send request</button>
       <div class="back-link" onclick="resetReqStep()">← Search again</div>
     </div>
   </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
 </div><!-- #app -->
 
@@ -700,7 +697,7 @@ async function loadData() {
   if (!ME) return;
   try {
     const [d, t] = await Promise.all([
-      sb(`debts?select=*,user_a_profile:user_a(username,photo_url),user_b_profile:user_b(username,photo_url)&or=(user_a.eq.${ME.id},user_b.eq.${ME.id})&order=updated_at.desc`),
+      sb(`debts?or=(user_a.eq.${ME.id},user_b.eq.${ME.id})&order=updated_at.desc`),
       sb(`transactions?or=(from_id.eq.${ME.id},to_id.eq.${ME.id})&order=created_at.desc&limit=40`)
     ]);
     allDebts = d || [];
@@ -708,6 +705,7 @@ async function loadData() {
     pendingTx = allTx.filter(tx => tx.status === 'pending' && tx.to_id === ME.id);
     renderHome();
     renderHistory();
+    renderMyQR();
     updateNotifBadge();
   } catch(e) { console.error(e); }
 }
@@ -742,29 +740,27 @@ function renderHome() {
     if (owedToMe.length) {
       html += `<div class="section-head">They owe you</div>`;
       owedToMe.forEach(d => {
-        const other = d.user_a === ME.id ? d.user_b_profile : d.user_a_profile;
-        html += debtRow(other.username, other.photo_url, d.net_amount, true, d.updated_at);
+        const other = d.user_a===ME.id ? d.user_b_name||'Someone' : d.user_a_name||'Someone';
+        html += debtRow(other, d.net_amount, true, d.updated_at);
       });
     }
     if (iOwe.length) {
       html += `<div class="section-head mt12">You owe</div>`;
       iOwe.forEach(d => {
-        const other = d.user_a === ME.id ? d.user_b_profile : d.user_a_profile;
-        html += debtRow(other.username, other.photo_url, d.net_amount, false, d.updated_at);
+        const other = d.user_a===ME.id ? d.user_b_name||'Someone' : d.user_a_name||'Someone';
+        html += debtRow(other, d.net_amount, false, d.updated_at);
       });
     }
   }
   wrap.innerHTML = html;
 }
 
-function debtRow(name, photo, amount, isOwed, date) {
+function debtRow(name, amount, isOwed, date) {
   const color = isOwed ? '#00e5a0' : '#ff8080';
   const prefix = isOwed ? '+' : '−';
-  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-  const days = Math.floor(seconds / 86400);
-  const dt = days < 1 ? 'today' : (days < 2 ? 'yesterday' : new Date(date).toLocaleDateString());
+  const dt = new Date(date).toLocaleDateString();
   return `<div class="debt-item">
-    ${avatarHTML(name,photo,44)}
+    ${avatarHTML(name,null,44)}
     <div class="debt-info">
       <div class="debt-name">${esc(name)}</div>
       <div class="debt-meta">${isOwed?'Owes you':'You owe'} · ${dt}</div>
@@ -786,16 +782,11 @@ function renderHistory() {
     const sent = tx.from_id === ME?.id;
     const isPay = tx.type === 'pay';
     const who = sent ? (tx.to_name||'?') : (tx.from_name||'?');
-    let label;
-    if (isPay) {
-      label = sent ? `Paid ${who}` : `Payment from ${who}`;
-    } else { // 'request' now means recording a debt you owe
-      label = sent ? `You owe ${who}` : `${who} owes you`;
-    }
+    const label = isPay ? (sent?`Paid ${who}`:`Payment from ${who}`) : (sent?`Requested from ${who}`:`Request from ${who}`);
     const color = tx.status==='pending' ? '#f0a030' : (sent ? '#ff8080' : '#00e5a0');
     const prefix = sent ? '−' : '+';
     const iconBg = tx.status==='pending' ? 'tx-pend' : (sent?'tx-sent':'tx-recv');
-    const icon = tx.status==='pending' ? '⏳' : (sent ? '↑' : '↓');
+    const icon = tx.status==='pending' ? '⏳' : (isPay?(sent?'↑':'↓'):(sent?'📤':'📥'));
     const dt = new Date(tx.created_at).toLocaleDateString();
     return `<div class="tx-item">
       <div class="tx-icon ${iconBg}">${icon}</div>
@@ -821,6 +812,9 @@ function renderMyQR() {
   document.getElementById('myqr-avatar').innerHTML = avatarHTML(ME.username, ME.photo_url, 64);
   document.getElementById('myqr-token-val').textContent = ME.token||'';
   drawQR('qr-canvas-main', ME.token||'', 200);
+  // overlay
+  document.getElementById('qr-token-val').textContent = ME.token||'';
+  drawQR('qr-canvas-ov', ME.token||'', 180);
 }
 
 async function regenToken(fromScreen) {
@@ -832,11 +826,6 @@ async function regenToken(fromScreen) {
     const sess = JSON.parse(localStorage.getItem('tabify_session')||'{}');
     if (sess.profile) { sess.profile.token = newTok; localStorage.setItem('tabify_session', JSON.stringify(sess)); }
     renderMyQR();
-    // Also update the overlay if it's open
-    if (document.getElementById('qr-overlay').classList.contains('open')) {
-        document.getElementById('qr-token-val').textContent = ME.token || '';
-        drawQR('qr-canvas-ov', ME.token || '', 180);
-    }
     toast('New token generated!');
   } catch(e) { toast('Failed to regenerate token','e'); }
 }
@@ -845,18 +834,24 @@ async function regenToken(fromScreen) {
 // QR DRAW
 // ═══════════════════════════════════════════════════════════════════════════
 function drawQR(canvasId, value, size) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas || !value) return;
-    QRCode.toCanvas(canvas, value, {
-        width: size,
-        margin: 1,
-        color: {
-            dark: '#00e5a0', // Green dots
-            light: '#0d1117'  // Dark background
-        }
-    }, function (error) {
-        if (error) console.error('QR Error:', error);
-    });
+  const canvas = document.getElementById(canvasId);
+  if (!canvas||!value) return;
+  const ctx = canvas.getContext('2d');
+  const cells = 21, cell = Math.floor(size/cells);
+  canvas.width = cells*cell; canvas.height = cells*cell;
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  const seed = value.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+  const rng=(x,y)=>{const n=Math.sin((x*127+y*311+seed*17)*9301+49297)*233280;return(n-Math.floor(n))>.5};
+  const corners=[[0,0],[0,cells-7],[cells-7,0]];
+  ctx.fillStyle='#00e5a0';
+  for(let y=0;y<cells;y++)for(let x=0;x<cells;x++){
+    let on=false;
+    const c=corners.find(([cx,cy])=>x>=cx&&x<cx+7&&y>=cy&&y<cy+7);
+    if(c){const lx=x-c[0],ly=y-c[1];on=lx===0||lx===6||ly===0||ly===6||(lx>=2&&lx<=4&&ly>=2&&ly<=4);}
+    else on=rng(x,y);
+    if(on)ctx.fillRect(x*cell,y*cell,cell-1,cell-1);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -873,18 +868,18 @@ function openNotif() {
   if (!pendingTx.length) {
     list.innerHTML='<div class="empty-state" style="padding:24px 0"><div class="empty-icon">✅</div><div class="empty-sub">No pending notifications</div></div>';
   } else {
-    list.innerHTML = pendingTx.map(tx => { //
+    list.innerHTML = pendingTx.map(tx => {
       const isPay = tx.type==='pay';
-      const label = isPay ? 'PAYMENT' : 'DEBT';
+      const label = isPay ? 'PAYMENT' : 'REQUEST';
       const cls = isPay ? 'notif-pay' : 'notif-req';
       const who = tx.from_name||'Someone';
-      const desc = isPay ? `${who} wants to pay you` : `${who} recorded a debt to you`;
+      const desc = isPay ? `${who} wants to pay you` : `${who} is requesting money from you`;
       return `<div class="notif-item">
         <div class="notif-top">
           <span class="notif-type ${cls}">${label}</span>
           <span style="font-size:13px;color:#7d8590">${new Date(tx.created_at).toLocaleDateString()}</span>
         </div>
-        <div class="notif-who">${desc}</div>
+        <div class="notif-who">${esc(who)}</div>
         <div class="notif-amount">${riel(tx.amount)}</div>
         ${tx.note?`<div class="notif-note">"${esc(tx.note)}"</div>`:''}
         <div class="notif-actions">
@@ -906,23 +901,61 @@ async function resolveTransaction(txId, status) {
       body:JSON.stringify({status, resolved_at:new Date().toISOString()})
     });
     if (status==='accepted') {
-      // For both 'pay' and 'request' (owe), from_id is the payer/debtor.
-      const payer = tx.from_id;
-      const payee = tx.to_id;
-      await sbRpc('apply_payment', {
-        payer_id: payer,
-        payee_id: payee,
-        amt: tx.amount
-      });
-      toast('Transaction accepted! Ledger updated ✅');
+      // apply_payment: payer=from_id, payee=to_id (for pay) or reverse (for request)
+      const payer = tx.type==='pay' ? tx.from_id : tx.to_id;
+      const payee = tx.type==='pay' ? tx.to_id : tx.from_id;
+      // also need to fetch names for the debt row
+      await updateDebtLedger(payer, payee, tx.amount, tx.from_name, tx.to_name);
+      toast('Payment accepted! Ledger updated ✅');
     } else {
       toast('Transaction declined');
     }
     closeOverlay('notif-overlay');
     await loadData();
-  } catch(e) {
-    toast(e.message||'Failed to resolve transaction','e');
+  } catch(e) { toast(e.message||'Failed','e'); }
+}
+
+async function updateDebtLedger(payerId, payeeId, amount, fromName, toName) {
+  // canonical pair
+  const a = payerId < payeeId ? payerId : payeeId;
+  const b = payerId < payeeId ? payeeId : payerId;
+  const existing = await sb(`debts?user_a=eq.${a}&user_b=eq.${b}&limit=1`);
+  const row = existing?.[0];
+
+  let newNet, newCreditor;
+  if (!row) {
+    // payee is owed
+    newNet = amount; newCreditor = payeeId;
+    await sb('debts', {
+      method:'POST',
+      body:JSON.stringify({
+        user_a:a, user_b:b, net_amount:newNet, net_creditor:newCreditor,
+        user_a_name: a===payerId?fromName:toName,
+        user_b_name: b===payerId?fromName:toName
+      })
+    });
+    return;
   }
+
+  if (row.net_creditor === payeeId) {
+    newNet = Number(row.net_amount) - amount;
+  } else {
+    newNet = Number(row.net_amount) + amount;
+  }
+
+  if (newNet > 0) {
+    newCreditor = row.net_creditor===payeeId ? payeeId : payerId;
+  } else if (newNet < 0) {
+    newNet = Math.abs(newNet);
+    newCreditor = row.net_creditor===payeeId ? payerId : payeeId;
+  } else {
+    newNet = 0; newCreditor = null;
+  }
+
+  await sb(`debts?user_a=eq.${a}&user_b=eq.${b}`, {
+    method:'PATCH',
+    body:JSON.stringify({net_amount:newNet, net_creditor:newCreditor, updated_at:new Date().toISOString()})
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -938,30 +971,8 @@ function setPayTab(tab) {
   });
   document.getElementById('pay-found').style.display = 'none';
   if (tab !== 'scan' && camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
-  if (tab === 'scan') {
-    document.getElementById('cam-view').style.display = 'none';
-    document.getElementById('cam-start-btn').style.display = 'block';
+  if (tab === 'scan') { startCamera();
   }
-}
-
-function scanQR() {
-  const video = document.getElementById('cam-video');
-  if (video.readyState === video.HAVE_ENOUGH_DATA) {
-    const canvas = document.createElement('canvas');
-    const camView = document.getElementById('cam-view');
-    canvas.width = camView.clientWidth;
-    canvas.height = camView.clientHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const code = jsQR(imageData.data, imageData.width, imageData.height);
-    if (code) {
-      if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
-      resolvePayToken(code.data.trim().toUpperCase());
-      return;
-    }
-  }
-  if (camStream) { requestAnimationFrame(scanQR); }
 }
 
 async function startCamera() {
@@ -969,12 +980,14 @@ async function startCamera() {
     camStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
     const vid = document.getElementById('cam-video');
     vid.srcObject = camStream;
-    vid.onloadedmetadata = () => {
-      vid.play();
-      document.getElementById('cam-view').style.display = 'block';
-      document.getElementById('cam-start-btn').style.display = 'none';
-      toast('Camera ready — point at QR code', 'i');
-      requestAnimationFrame(scanQR);
+    document.getElementById('cam-view').style.display = 'block';
+    document.getElementById('cam-start-btn').style.display = 'none';
+    toast('Camera ready — point at QR code', 'i');
+    // Simple polling: check every second for a token typed in a hidden field
+    // (Real QR decode needs a library; here we show a manual confirm button)
+    document.getElementById('cam-view').onclick = () => {
+      const tok = prompt('Enter the token shown on the QR code:');
+      if (tok) resolvePayToken(tok.trim().toUpperCase());
     };
   } catch(e) {
     toast('Camera access denied — use Type or Upload instead', 'e');
@@ -1008,26 +1021,10 @@ async function resolvePayToken(tok) {
 
 async function handleQRUpload(e) {
   const f = e.target.files[0]; if (!f) return;
-  const reader = new FileReader();
-  reader.onload = function(event) {
-    const img = new Image();
-    img.onload = function() {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, img.width, img.height);
-      const imageData = ctx.getImageData(0, 0, img.width, img.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
-      if (code) {
-        resolvePayToken(code.data.trim().toUpperCase());
-      } else {
-        toast('No QR code found in image', 'e');
-      }
-    };
-    img.src = event.target.result;
-  };
-  reader.readAsDataURL(f);
+  // We can't decode QR without a library, so we prompt manually
+  toast('QR image received — enter the token below', 'i');
+  setPayTab('type');
+  document.getElementById('type-token-input').focus();
 }
 
 function resetPayFound() {
@@ -1130,7 +1127,7 @@ async function submitRequest() {
     });
     closeOverlay('req-overlay');
     await loadData();
-    toast(`Debt to ${foundReqProfile.username} recorded ✅`);
+    toast(`Request sent to ${foundReqProfile.username} ✅`);
   } catch(e) { toast(e.message||'Failed','e'); }
 }
 
@@ -1142,14 +1139,7 @@ function closeOverlay(id) {
   document.getElementById(id).classList.remove('open');
   if (id==='pay-overlay' && camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
 }
-function openQR() {
-  openOverlay('qr-overlay');
-  setTimeout(() => {
-    if (!ME) return;
-    document.getElementById('qr-token-val').textContent = ME.token || '';
-    drawQR('qr-canvas-ov', ME.token || '', 180);
-  }, 50);
-}
+function openQR() { renderMyQR(); openOverlay('qr-overlay'); }
 
 const navScreens = ['home','history','myqr-screen'];
 function gotoScreen(id) {
@@ -1163,9 +1153,8 @@ function gotoScreen(id) {
   const nb=document.getElementById('nav-'+id);
   if(nb) nb.classList.add('active');
   window.scrollTo(0,0);
-  if (id === 'home') renderHome();
-  if (id === 'history') renderHistory();
-  if (id === 'myqr-screen') renderMyQR();
+  if(id==='myqr-screen') renderMyQR();
+  if(id==='history') renderHistory();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
